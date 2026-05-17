@@ -69,7 +69,7 @@ import {
 
       <!--
         Each app-chart component:
-        - fetches from the FastAPI endpoint named by `slug`
+        - fetches from the FastAPI endpoint named by 'slug'
         - re-fetches automatically when [filters] changes
       -->
       <app-chart slug="delinquency-trend"    [filters]="filters" />

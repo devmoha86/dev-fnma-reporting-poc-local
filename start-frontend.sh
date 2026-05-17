@@ -32,11 +32,20 @@ if [ -n "$CODESPACE_NAME" ]; then
 
 else
   ENV="local"
-  NPM_REGISTRY="https://nexusrepository.fanniemae.com/repository/npm-public/"
-  echo ""
-  echo "  Office laptop detected — using Nexus registry."
-  echo "  Make sure VPN is connected."
-  echo ""
+  # Check if Nexus registry is reachable
+  if curl -I -s --connect-timeout 3 "https://nexusrepository.fanniemae.com" >/dev/null; then
+    NPM_REGISTRY="https://nexusrepository.fanniemae.com/repository/npm-public/"
+    echo ""
+    echo "  Office laptop detected — using Nexus registry."
+    echo "  Make sure VPN is connected."
+    echo ""
+  else
+    NPM_REGISTRY="https://registry.npmjs.org"
+    echo ""
+    echo "  Nexus registry unreachable — falling back to public registry."
+    echo "  (Assuming personal compute without VPN)"
+    echo ""
+  fi
 fi
 
 # ── npm install if needed ─────────────────────────────────────────
@@ -51,7 +60,7 @@ fi
 # ── Print info ────────────────────────────────────────────────────
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  Angular 18.2.19 — Reporting MFE"
+echo "  Angular 18.2.x — Reporting MFE"
 echo "  Node: $(node --version)   npm: $(npm --version)"
 echo "  URL:  http://localhost:4200"
 echo "  Env:  $ENV"

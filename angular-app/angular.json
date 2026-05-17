@@ -17,7 +17,8 @@
             "tsConfig": "tsconfig.json",
             "assets": [],
             "styles": ["src/styles.css"],
-            "scripts": []
+            "scripts": [],
+            "polyfills": ["zone.js"]
           },
           "configurations": {
             "production": {
@@ -45,5 +46,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
