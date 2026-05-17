@@ -1,0 +1,25 @@
+unique_id,servicer_number,servicer_name,tenant_id,business_date,region,loan_count,delinquency_rate,total_balance_usd,metric_status
+1001,SVC-001,Apex Mortgage Services,tenant-a,2026-04-01,NORTH,1240,0.032,184500000.00,GREEN
+1002,SVC-001,Apex Mortgage Services,tenant-a,2026-04-02,NORTH,1248,0.034,185100000.00,GREEN
+1003,SVC-001,Apex Mortgage Services,tenant-a,2026-04-03,NORTH,1251,0.036,185920000.00,YELLOW
+1004,SVC-002,Beacon Loan Servicing,tenant-a,2026-04-01,SOUTH,890,0.041,121300000.00,YELLOW
+1005,SVC-002,Beacon Loan Servicing,tenant-a,2026-04-02,SOUTH,892,0.043,121800000.00,YELLOW
+1006,SVC-002,Beacon Loan Servicing,tenant-a,2026-04-03,SOUTH,895,0.045,122050000.00,RED
+1007,SVC-003,Cardinal Servicing Group,tenant-b,2026-04-01,EAST,2105,0.021,302400000.00,GREEN
+1008,SVC-003,Cardinal Servicing Group,tenant-b,2026-04-02,EAST,2112,0.022,303100000.00,GREEN
+1009,SVC-003,Cardinal Servicing Group,tenant-b,2026-04-03,EAST,2118,0.023,303900000.00,GREEN
+1010,SVC-004,Delta Financial Partners,tenant-b,2026-04-01,WEST,1567,0.029,221800000.00,GREEN
+1011,SVC-004,Delta Financial Partners,tenant-b,2026-04-02,WEST,1571,0.030,222400000.00,GREEN
+1012,SVC-004,Delta Financial Partners,tenant-b,2026-04-03,WEST,1574,0.031,223000000.00,GREEN
+1013,SVC-005,Evergreen Capital Servicing,tenant-c,2026-04-01,NORTH,743,0.052,98700000.00,RED
+1014,SVC-005,Evergreen Capital Servicing,tenant-c,2026-04-02,NORTH,741,0.054,98500000.00,RED
+1015,SVC-005,Evergreen Capital Servicing,tenant-c,2026-04-03,NORTH,739,0.055,98300000.00,RED
+1016,SVC-006,Fortis Home Loans,tenant-c,2026-04-01,SOUTH,1820,0.027,258900000.00,GREEN
+1017,SVC-006,Fortis Home Loans,tenant-c,2026-04-02,SOUTH,1825,0.028,259400000.00,GREEN
+1018,SVC-006,Fortis Home Loans,tenant-c,2026-04-03,SOUTH,1830,0.029,259900000.00,YELLOW
+1019,SVC-007,Granite Mortgage Co,tenant-a,2026-04-01,EAST,995,0.038,140200000.00,YELLOW
+1020,SVC-007,Granite Mortgage Co,tenant-a,2026-04-02,EAST,998,0.039,140600000.00,YELLOW
+1021,SVC-007,Granite Mortgage Co,tenant-a,2026-04-03,EAST,1001,0.040,141100000.00,YELLOW
+1022,SVC-008,Horizon Lending Services,tenant-b,2026-04-01,WEST,1340,0.025,189700000.00,GREEN
+1023,SVC-008,Horizon Lending Services,tenant-b,2026-04-02,WEST,1344,0.026,190200000.00,GREEN
+1024,SVC-008,Horizon Lending Services,tenant-b,2026-04-03,WEST,1348,0.027,190700000.00,GREEN

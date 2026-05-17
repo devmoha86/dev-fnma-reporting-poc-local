@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Terminal 2 — Start the Angular app
+# Works on: office laptop (Nexus registry) and GitHub Codespaces (public registry)
+#
+# Usage: bash start-frontend.sh
+
+set -e
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$REPO_ROOT/angular-app"
+
+# ── Detect environment ────────────────────────────────────────────
+# CODESPACE_NAME is set automatically by GitHub Codespaces.
+if [ -n "$CODESPACE_NAME" ]; then
+  ENV="codespaces"
+  NPM_REGISTRY="https://registry.npmjs.org"
+
+  # In Codespaces, Angular running on :4200 calls the FastAPI backend
+  # on :8000. Codespaces exposes each port on a unique public URL, so
+  # the Angular app can't hardcode "localhost:8000" — it needs the
+  # Codespaces-forwarded URL for port 8000.
+  #
+  # We patch the API base URL in reporting.service.ts before serving.
+  BACKEND_URL="https://${CODESPACE_NAME}-8000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  echo ""
+  echo "  Codespaces detected."
+  echo "  Backend URL will be: $BACKEND_URL"
+  echo ""
+
+  # Patch the API URL in the service file
+  sed -i "s|http://localhost:8000|${BACKEND_URL}|g" \
+    src/app/shared/reporting.service.ts
+
+else
+  ENV="local"
+  NPM_REGISTRY="https://nexusrepository.fanniemae.com/repository/npm-public/"
+  echo ""
+  echo "  Office laptop detected — using Nexus registry."
+  echo "  Make sure VPN is connected."
+  echo ""
+fi
+
+# ── npm install if needed ─────────────────────────────────────────
+if [ ! -d "node_modules" ]; then
+  echo "Installing npm packages from $NPM_REGISTRY ..."
+  npm install \
+    --ignore-scripts \
+    --legacy-peer-deps \
+    --registry "$NPM_REGISTRY"
+fi
+
+# ── Print info ────────────────────────────────────────────────────
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  Angular 18.2.19 — Reporting MFE"
+echo "  Node: $(node --version)   npm: $(npm --version)"
+echo "  URL:  http://localhost:4200"
+echo "  Env:  $ENV"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+# ── Serve ─────────────────────────────────────────────────────────
+# --host 0.0.0.0 required for Codespaces port forwarding.
+# --disable-host-check avoids the "Invalid Host header" error in Codespaces.
+npx ng serve \
+  --host 0.0.0.0 \
+  --port 4200 \
+  --disable-host-check
