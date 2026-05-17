@@ -1,3 +1,5 @@
+--extra-index-url https://nexusrepository.fanniemae.com/nexus/repository/pypi-all/simple/
+
 fastapi==0.115.0
 uvicorn[standard]==0.32.0
 pandas==2.2.3
