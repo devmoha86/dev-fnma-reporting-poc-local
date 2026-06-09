@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reporting Dashboard MFE — Solution Comparison</title>
+
+<script>
+/* ============================================================
+   ✏️  EDITABLE DATA SECTION — change anything here freely.
+       Do NOT edit below the "END DATA" comment.
+   ============================================================ */
+
+const DATA = {
+
+  /* ── Page header ── */
+  header: {
+    eyebrow:  "Fannie Mae — Loan Servicing Platform",
+    title:    "Reporting Dashboard MFE — Solution Comparison",
+    subtitle: "Effort estimation & option analysis: Option 1 (Angular + Python) vs Option 2 (Tableau)",
+    meta: ["Status: DRAFT", "Scope: 1 Complex Dashboard (~10 Re: Dashboards)", "June 2025"]
+  },
+
+  /* ── Recommendation banner ── */
+  verdict: {
+    title: "Recommendation: Option 1 — Angular + Python",
+    text:  "Option 1 is the stronger strategic choice on customisability, NLQ/Agentic AI extensibility, cost, and long-term flexibility. Option 2 (Tableau) builds faster — but introduces vendor lock-in, iframe/CSP integration debt, high licence cost, and limited Agentic AI capability. Given the Fannie Mae constraint environment (Nexus, Apigee, Ping Identity) and the NLQ roadmap requirement, Option 1 is recommended. Co-Pilot reduces the engineering effort gap significantly.",
+    highlights: ["customisability, NLQ/Agentic AI extensibility, cost, and long-term flexibility",
+                 "vendor lock-in, iframe/CSP integration debt, high licence cost, and limited Agentic AI capability"]
+  },
+
+  /* ── Effort tables ── */
+  effort: {
+    opt1: {
+      label: "Option 1 — Angular + Python (custom build)",
+      total: "~5 days total",
+      rows: [
+        { component: "Summary Tile Metrics",          est: "~3 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Bar Chart",                     est: "~2 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Line Chart",                    est: "~2 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Pie Chart",                     est: "~2 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Tabular View",                  est: "~2 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Global Filters",                est: "~2 hrs",        layer: "Frontend",  tag: "fe" },
+        { component: "Frontend Dev + Testing",        est: "2d dev + 1d test", layer: "3 days FE", tag: "subtotal" },
+        { component: "API component (avg/endpoint)",  est: "~2 hrs",        layer: "Backend",   tag: "be" },
+        { component: "6 API components × 2 hrs",      est: "~12 hrs",       layer: "Backend",   tag: "be" },
+        { component: "Backend Total",                 est: "~12 hrs",       layer: "2 days BE", tag: "subtotal" },
+        { component: "TOTAL",                         est: "~5 days",       layer: "Full-stack",tag: "grand" },
+      ]
+    },
+    opt2: {
+      label: "Option 2 — Tableau (off-the-shelf)",
+      total: "~3.5 days total",
+      rows: [
+        { component: "6 frontend components (workbooks/dashboards)", est: "2 days",  layer: "Frontend",  tag: "fe" },
+        { component: "Frontend Total",                               est: "2 days",  layer: "2 days FE", tag: "subtotal" },
+        { component: "1 SQL view (data source prep)",                est: "1.0 day", layer: "Backend",   tag: "be" },
+        { component: "Tableau metadata config (extracts, synonyms)", est: "0.5 day", layer: "Config",    tag: "mixed" },
+        { component: "Backend + Config Total",                       est: "1.5 days",layer: "1.5 days",  tag: "subtotal" },
+        { component: "TOTAL",                                        est: "~3.5 days",layer: "Full-stack",tag: "grand" },
+      ]
+    }
+  },
+
+  /* ── Merits / Demerits ── */
+  meritsDemerits: {
+    opt1: {
+      merits: [
+        { title: "Highly customisable — NLQ & Agentic AI ready",
+          body:  "Full control over UI, chart types, and layout. NLQ/Agentic AI functionality (Bedrock, Co-Pilot) can be wired in natively without third-party API constraints." },
+        { title: "No integration challenges with iframe/CSP",
+          body:  "Angular MFE integrates cleanly via Module Federation into the portal shell — no iframe restrictions, no Content-Security-Policy conflicts." },
+        { title: "No licence cost",
+          body:  "Angular, Python, FastAPI, Plotly.js, Pandas — all MIT/BSD open-source. Zero per-seat or per-server licence fees now or at scale." },
+        { title: "No vendor lock-in",
+          body:  "Stack is portable. Components can be replaced or extended independently without renegotiating vendor contracts." },
+      ],
+      demerits: [
+        { title: "Vulnerability management overhead",
+          body:  "Open-source libraries require ongoing CVE monitoring, dependency patching, and Snyk/Dependabot scanning in the CI/CD pipeline." },
+        { title: "Higher engineering effort",
+          body:  "~5 days vs 3.5 days for Tableau. Gap is real but addressable — Co-Pilot assistance estimated to reduce effort by 30–40%, bringing effective cost closer to parity." },
+        { title: "Needs regular maintenance",
+          body:  "Framework upgrades (Angular, FastAPI, Plotly), browser compatibility changes, and API updates require periodic engineering sprints." },
+      ]
+    },
+    opt2: {
+      merits: [
+        { title: "Powerful out-of-the-box visualisation",
+          body:  "Drag-and-drop chart builder, built-in Ask Data NLQ, rich chart library — minimal frontend dev needed for standard report types." },
+        { title: "Low maintenance on the viz layer",
+          body:  "Tableau manages chart rendering, browser compatibility, and visualisation upgrades — engineering team is not responsible for chart library updates." },
+        { title: "Speed to build and deploy",
+          body:  "~3.5 days vs 5 days for custom build. Faster time-to-value for standard dashboards with no novel visualisation requirements." },
+        { title: "Self-serve report builder for end users",
+          body:  "Non-technical servicer users can modify and create their own views without engineering involvement via Tableau Explorer/Creator licences." },
+      ],
+      demerits: [
+        { title: "Integration challenge — iframe + CSP restriction (tech debt)",
+          body:  "Embedding Tableau in the Angular MFE via iframe conflicts with Fannie Mae Content-Security-Policy headers. Requires CSP exceptions and creates long-term tech debt in the portal shell." },
+        { title: "Vendor lock-in — less flexible",
+          body:  "Tableau's API surface, data connector model, and visualisation logic are proprietary. Migration or extension requires Tableau-specific skills and licences." },
+        { title: "Limited Agentic AI capability",
+          body:  "Tableau's NLQ (Ask Data / Pulse) is limited to Tableau's own semantic layer. Custom Bedrock/LLM integration, cross-source queries, and agentic workflows are not natively supported." },
+        { title: "High licence cost",
+          body:  "Per-seat Creator/Explorer licences plus Server on EC2 infrastructure costs. Scales poorly with 2,000+ servicer users without careful licence tier management." },
+      ]
+    }
+  },
+
+  /* ── Side-by-side comparison table ──
+     signal: "good" | "warn" | "bad"          */
+  comparison: [
+    { dim: "Build effort",
+      opt1: { signal: "warn", text: "~5 days (3 FE + 2 BE). Co-Pilot reduces to ~3–3.5 days effective." },
+      opt2: { signal: "good", text: "~3.5 days (2 FE + 1 SQL + 0.5 config). Faster for standard dashboards." } },
+    { dim: "Licence cost",
+      opt1: { signal: "good", text: "$0 — all MIT/BSD open-source." },
+      opt2: { signal: "bad",  text: "High — per-seat Creator/Explorer + Server EC2 infrastructure." } },
+    { dim: "MFE integration",
+      opt1: { signal: "good", text: "Native — Angular Module Federation, no iframe needed." },
+      opt2: { signal: "bad",  text: "iframe + CSP conflicts — requires security exceptions, creates tech debt." } },
+    { dim: "NLQ / Agentic AI",
+      opt1: { signal: "good", text: "Full control — Bedrock NLQ-to-SQL, custom intent routing, agentic workflows." },
+      opt2: { signal: "warn", text: "Limited — Ask Data on published extracts only. No custom LLM integration." } },
+    { dim: "Vendor risk",
+      opt1: { signal: "good", text: "None — open-source, portable stack." },
+      opt2: { signal: "bad",  text: "High — proprietary format, licence dependency, migration cost." } },
+    { dim: "Maintenance",
+      opt1: { signal: "warn", text: "Medium — CVE patching, framework upgrades required. Manageable with DevSecOps pipeline." },
+      opt2: { signal: "good", text: "Low on viz layer — Tableau manages chart rendering. EC2 infra still requires patching." } },
+    { dim: "Self-serve for users",
+      opt1: { signal: "warn", text: "Custom build needed — NLQ input + Bedrock can deliver self-serve, but requires engineering." },
+      opt2: { signal: "good", text: "Built-in — Tableau Explorer/Creator licences allow non-technical user authoring." } },
+    { dim: "SSO / Ping Identity",
+      opt1: { signal: "good", text: "Clean — JWT via Apigee, standard Angular HTTP interceptor pattern." },
+      opt2: { signal: "warn", text: "Needs verification — SAML SP-initiated flow, forceAuthn flag, cross-domain session checks required." } },
+    { dim: "Data connector to Aurora / Athena",
+      opt1: { signal: "good", text: "Direct / native — SQLAlchemy connects to Aurora PostgreSQL natively; FastAPI routes large-dataset queries to Athena via boto3. No connector middleware required." },
+      opt2: { signal: "warn", text: "JDBC / ODBC connectors required — Tableau connects to Aurora via the Tableau PostgreSQL JDBC driver and to Athena via the Tableau Amazon Athena ODBC/JDBC connector. Extract mode (.hyper) improves performance at the cost of data freshness." } },
+  ],
+
+  /* ── Decision summary cards ── */
+  decision: [
+    { label: "Recommended option",
+      text:  "Option 1 — Angular + Python. Higher strategic value: NLQ-ready, no licence cost, clean MFE integration, no vendor lock-in." },
+    { label: "When to choose Option 2 instead",
+      text:  "Only if speed-to-demo is the overriding constraint and the team accepts iframe/CSP tech debt, licence cost, and limited AI extensibility long-term." },
+    { label: "Effort gap mitigation",
+      text:  "Option 1 is ~1.5 days slower. Co-Pilot assistance closes this gap to near-parity. PoC scaffolding already built reduces Day 1 effort further." },    
+  ],
+
+  footer: "DRAFT — INTERNAL USE ONLY — Prepared by Devashis Mohapatra, June 2025"
+};
+
+/* ============================================================
+   END DATA — do not edit below this line
+   ============================================================ */
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:   #0D1B2A; --navy2:  #152336; --navy3:  #1E3451;
+    --steel:  #2E5C8A; --sky:    #4A90C4; --ice:    #D6E8F5;
+    --opt1:   #1A6B3C; --opt1-l: #E8F5EE; --opt1-m: #2D9D5A;
+    --opt2:   #B8520A; --opt2-l: #FEF3E8; --opt2-m: #E07020;
+    --red:    #C0392B; --red-l:  #FDEDEB;
+    --text:   #1A2332; --muted:  #5A6878; --border: #D8E2EC;
+    --bg:     #F4F7FA; --white:  #FFFFFF;
+    --mono: 'JetBrains Mono', monospace; --sans: 'Inter', sans-serif;
+  }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* header */
+  .page-header { background: var(--navy); color: white; padding: 36px 48px 32px; border-bottom: 3px solid var(--sky); }
+  .eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--sky); font-weight: 600; margin-bottom: 8px; }
+  .page-header h1 { font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .page-header .sub { margin-top: 6px; font-size: 14px; color: #8AACCC; }
+  .meta { margin-top: 16px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .meta-pill { background: var(--navy3); border: 1px solid var(--steel); padding: 4px 12px; border-radius: 4px; font-size: 12px; color: #8AACCC; font-family: var(--mono); }
+
+  /* layout */
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 48px 64px; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--steel); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+
+  /* verdict */
+  .verdict { background: var(--navy); border-left: 5px solid var(--opt1-m); border-radius: 6px; padding: 22px 28px; margin-bottom: 36px; display: flex; gap: 20px; }
+  .verdict-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .verdict-body h3 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .verdict-body p { font-size: 13px; color: #8AACCC; line-height: 1.6; }
+  .verdict-body strong { color: #B8E0C8; }
+
+  /* opt badges */
+  .opt-badge { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .badge-1 { background: var(--opt1-l); color: var(--opt1); border: 1px solid #A8D8B8; }
+  .badge-2 { background: var(--opt2-l); color: var(--opt2); border: 1px solid #F0C090; }
+
+  /* effort */
+  .effort-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 36px; }
+  .effort-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .effort-card-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .ech-1 { background: var(--opt1); } .ech-2 { background: var(--opt2); }
+  .effort-card-header span { color: white; font-weight: 700; font-size: 13px; }
+  .effort-card-header .total-badge { background: rgba(255,255,255,.2); color: white; font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+  .effort-table { width: 100%; border-collapse: collapse; }
+  .effort-table th { background: #F4F7FA; font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .effort-table td { padding: 9px 16px; font-size: 13px; border-bottom: 1px solid #F0F4F8; vertical-align: middle; }
+  .effort-table tr:last-child td { border-bottom: none; }
+  .effort-table tr.subtotal td { background: #F4F7FA; font-weight: 600; font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); }
+  .effort-table tr.grand td { background: var(--navy); color: white; font-weight: 700; font-size: 13px; font-family: var(--mono); }
+  .mono { font-family: var(--mono); font-size: 12px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: 600; }
+  .tag-fe    { background: #E8F0FE; color: #1967D2; }
+  .tag-be    { background: #FEF0E6; color: #B05A0D; }
+  .tag-mixed { background: #F0EEF8; color: #5B4DA0; }
+
+  /* merits/demerits */
+  .opt-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .opt-section-header .line { flex: 1; height: 1px; background: var(--border); }
+  .md-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .md-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .md-card-header { padding: 14px 20px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .md-merit-hdr   { color: var(--opt1); background: var(--opt1-l); }
+  .md-demerit-hdr { color: var(--red);  background: var(--red-l); }
+  .md-item { padding: 14px 20px; border-bottom: 1px solid #F0F4F8; display: flex; gap: 12px; }
+  .md-item:last-child { border-bottom: none; }
+  .md-num { flex: 0 0 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 2px; }
+  .num-merit   { background: var(--opt1-l); color: var(--opt1); }
+  .num-demerit { background: var(--red-l);  color: var(--red); }
+  .md-text h4 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .md-text p  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .merit-title   { color: var(--opt1); }
+  .demerit-title { color: var(--red); }
+
+  /* comparison table */
+  .comp-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 36px; }
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th { padding: 12px 20px; text-align: left; font-size: 12px; font-weight: 700; border-bottom: 2px solid var(--border); }
+  .comp-table th:first-child { background: #F4F7FA; color: var(--muted); width: 18%; }
+  .comp-table th.th1 { background: var(--opt1); color: white; width: 41%; }
+  .comp-table th.th2 { background: var(--opt2); color: white; width: 41%; }
+  .comp-table td { padding: 12px 20px; font-size: 13px; border-bottom: 1px solid #F0F4F8; vertical-align: top; }
+  .comp-table tr:last-child td { border-bottom: none; }
+  .comp-table td:first-child { background: #F8FAFB; font-weight: 600; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .comp-table tr:nth-child(even) td:not(:first-child) { background: #FAFCFE; }
+  .good { color: var(--opt1); font-weight: 600; }
+  .warn { color: #B05A0D;    font-weight: 600; }
+  .bad  { color: var(--red); font-weight: 600; }
+
+  /* decision */
+  .decision-section { background: var(--navy); border-radius: 8px; padding: 28px 32px; margin-bottom: 16px; }
+  .decision-section h3 { color: var(--sky); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 16px; }
+  .decision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .decision-item { background: var(--navy2); border: 1px solid var(--navy3); border-radius: 6px; padding: 16px 18px; }
+  .di-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #5A8CB0; margin-bottom: 6px; }
+  .decision-item p { font-size: 13px; color: #9AB8CC; line-height: 1.5; }
+  .decision-item strong { color: white; }
+  .draft-badge { text-align: center; padding: 10px; font-size: 11px; color: var(--muted); font-family: var(--mono); letter-spacing: .06em; }
+
+  /* print / export button */
+  .toolbar { display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 24px; }
+  .btn { padding: 8px 18px; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; font-family: var(--sans); }
+  .btn-print { background: var(--navy); color: white; }
+  .btn-print:hover { background: var(--steel); }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    body { background: white; font-size: 11px; }
+    .toolbar { display: none; }
+    .page-header { padding: 20px 28px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .container { padding: 16px 28px; max-width: 100%; }
+    .verdict, .decision-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .effort-grid, .md-grid, .decision-grid { grid-template-columns: 1fr 1fr; }
+    .effort-card-header, .ech-1, .ech-2 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .comp-table th.th1, .comp-table th.th2, .effort-table tr.grand td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .md-card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .effort-card, .md-card, .comp-wrap, .decision-item { break-inside: avoid; }
+    .section-label { margin-top: 16px; }
+    @page { margin: 1.5cm 1.2cm; size: A4 landscape; }
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px 16px; }
+    .page-header { padding: 24px 20px; }
+    .effort-grid, .md-grid, .decision-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ── RENDER ENGINE ─────────────────────────────────────────────────────────────
+
+const tagMap = { fe: 'tag-fe', be: 'tag-be', mixed: 'tag-mixed' };
+
+function effortRows(rows) {
+  return rows.map(r => {
+    if (r.tag === 'subtotal') return `<tr class="subtotal"><td>${r.component}</td><td class="mono">${r.est}</td><td>${r.layer}</td></tr>`;
+    if (r.tag === 'grand')    return `<tr class="grand"><td>${r.component}</td><td class="mono">${r.est}</td><td>${r.layer}</td></tr>`;
+    const tagClass = tagMap[r.tag] || '';
+    return `<tr><td>${r.component}</td><td class="mono">${r.est}</td><td>${tagClass ? `<span class="tag ${tagClass}">${r.layer}</span>` : r.layer}</td></tr>`;
+  }).join('');
+}
+
+function mdItems(items, type) {
+  const isM = type === 'merit';
+  return items.map((item, i) => `
+    <div class="md-item">
+      <div class="md-num ${isM ? 'num-merit' : 'num-demerit'}">${i + 1}</div>
+      <div class="md-text">
+        <h4 class="${isM ? 'merit-title' : 'demerit-title'}">${item.title}</h4>
+        <p>${item.body}</p>
+      </div>
+    </div>`).join('');
+}
+
+function mdBlock(optKey, label, badgeClass) {
+  const d = DATA.meritsDemerits[optKey];
+  return `
+    <div class="opt-section-header" style="margin-top:28px">
+      <span class="opt-badge ${badgeClass}" style="font-size:11px;padding:4px 12px">${label}</span>
+      <div class="line"></div>
+      <span style="font-size:12px;color:var(--muted)">Merits &amp; De-merits</span>
+    </div>
+    <div class="md-grid">
+      <div class="md-card">
+        <div class="md-card-header md-merit-hdr">✓ &nbsp;Merits</div>
+        ${mdItems(d.merits, 'merit')}
+      </div>
+      <div class="md-card">
+        <div class="md-card-header md-demerit-hdr">✗ &nbsp;De-merits</div>
+        ${mdItems(d.demerits, 'demerit')}
+      </div>
+    </div>`;
+}
+
+function compRows(rows) {
+  return rows.map(r => `
+    <tr>
+      <td>${r.dim}</td>
+      <td><span class="${r.opt1.signal}">${signalLabel(r.opt1.signal)}</span> ${r.opt1.text}</td>
+      <td><span class="${r.opt2.signal}">${signalLabel(r.opt2.signal)}</span> ${r.opt2.text}</td>
+    </tr>`).join('');
+}
+
+function signalLabel(s) {
+  return s === 'good' ? '✓' : s === 'warn' ? '⚠' : '✗';
+}
+
+function render() {
+  const h = DATA.header;
+  const v = DATA.verdict;
+  const e = DATA.effort;
+
+  document.getElementById('app').innerHTML = `
+
+    <header class="page-header">
+      <div class="eyebrow">${h.eyebrow}</div>
+      <h1>${h.title}</h1>
+      <div class="sub">${h.subtitle}</div>
+      <div class="meta">${h.meta.map(m => `<span class="meta-pill">${m}</span>`).join('')}</div>
+    </header>
+
+    <div class="container">
+
+      <div class="toolbar">
+        <button class="btn btn-print" onclick="window.print()">🖨 Print / Export PDF</button>
+      </div>
+
+      <div class="verdict">
+        <div class="verdict-icon">🏁</div>
+        <div class="verdict-body">
+          <h3>${v.title}</h3>
+          <p>${v.text}</p>
+        </div>
+      </div>
+
+      <div class="section-label">Build Effort Estimation — per dashboard</div>
+      <div class="effort-grid">
+        <div class="effort-card">
+          <div class="effort-card-header ech-1">
+            <span>${e.opt1.label}</span>
+            <span class="total-badge">${e.opt1.total}</span>
+          </div>
+          <table class="effort-table">
+            <thead><tr><th>Component</th><th>Est.</th><th>Layer</th></tr></thead>
+            <tbody>${effortRows(e.opt1.rows)}</tbody>
+          </table>
+        </div>
+        <div class="effort-card">
+          <div class="effort-card-header ech-2">
+            <span>${e.opt2.label}</span>
+            <span class="total-badge">${e.opt2.total}</span>
+          </div>
+          <table class="effort-table">
+            <thead><tr><th>Component</th><th>Est.</th><th>Layer</th></tr></thead>
+            <tbody>${effortRows(e.opt2.rows)}</tbody>
+          </table>
+        </div>
+      </div>
+
+      ${mdBlock('opt1', 'Option 1 — Angular + Python', 'badge-1')}
+      ${mdBlock('opt2', 'Option 2 — Tableau', 'badge-2')}
+
+      <div class="section-label" style="margin-top:36px">Side-by-side comparison</div>
+      <div class="comp-wrap">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th class="th1">Option 1 — Angular + Python</th>
+              <th class="th2">Option 2 — Tableau</th>
+            </tr>
+          </thead>
+          <tbody>${compRows(DATA.comparison)}</tbody>
+        </table>
+      </div>
+
+      <div class="decision-section">
+        <h3>Decision summary &amp; next steps</h3>
+        <div class="decision-grid">
+          ${DATA.decision.map(d => `
+            <div class="decision-item">
+              <div class="di-label">${d.label}</div>
+              <p>${d.text}</p>
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="draft-badge">${DATA.footer}</div>
+    </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
