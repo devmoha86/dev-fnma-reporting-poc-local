@@ -196,6 +196,21 @@ body {
   position: relative;
   overflow: hidden;
 }
+.nlq-card-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border: 1px solid var(--border);
+  background: #0a1220;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.nlq-card-btn:hover { border-color: var(--accent); color: var(--text); }
 .kpi-card::before {
   content: '';
   position: absolute;
@@ -246,6 +261,19 @@ body {
   align-items: center;
   gap: 8px;
 }
+.nlq-btn {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: #0a1220;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.nlq-btn:hover { border-color: var(--accent); color: var(--text); }
 .chart-host { height: 280px; width: 100%; }
 
 /* ── Loading shimmer ──────────────────────────────────────────── */
@@ -296,3 +324,158 @@ body {
 .status-pill.GREEN  { background: rgba(16,185,129,0.12); color: var(--green); }
 .status-pill.YELLOW { background: rgba(245,158,11,0.12);  color: var(--yellow); }
 .status-pill.RED    { background: rgba(239,68,68,0.12);   color: var(--red); }
+
+/* NLQ Panel */
+.nlq-panel {
+  position: fixed;
+  top: 50px;
+  right: -430px;
+  width: 420px;
+  max-width: calc(100vw - 18px);
+  height: calc(100vh - 50px);
+  background: #0b1220;
+  border-left: 1px solid var(--border);
+  z-index: 50;
+  transition: right 220ms ease;
+  display: flex;
+  flex-direction: column;
+}
+.nlq-panel.open { right: 0; }
+
+.nlq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.nlq-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.nlq-header h3 {
+  margin-top: 4px;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text);
+}
+.nlq-close {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: var(--r);
+  cursor: pointer;
+}
+
+.nlq-suggestions {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+}
+.nlq-chip {
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  background: #131d32;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.nlq-chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nlq-empty {
+  color: var(--dim);
+  font-size: 11px;
+  border: 1px dashed var(--border);
+  border-radius: var(--r);
+  padding: 10px;
+}
+.nlq-msg {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px;
+  background: #131d32;
+}
+.nlq-msg.user {
+  background: #0e1830;
+  border-color: #203152;
+}
+.nlq-role {
+  color: var(--dim);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.nlq-msg p {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.nlq-loading {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.nlq-input {
+  border-top: 1px solid var(--border);
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+}
+.nlq-input textarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid var(--border);
+  background: #101827;
+  color: var(--text);
+  border-radius: var(--r);
+  padding: 8px;
+  font-family: var(--font-data);
+  font-size: 12px;
+}
+.nlq-input button {
+  border: none;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--r);
+  padding: 0 14px;
+  cursor: pointer;
+}
+.nlq-input button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "topbar" "sidebar" "main";
+    height: auto;
+    min-height: 100vh;
+  }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+  .main-area { padding: 14px; }
+  .kpi-row, .chart-grid { grid-template-columns: 1fr; }
+  .nlq-panel {
+    top: 0;
+    height: 100vh;
+    width: 100vw;
+    right: -100vw;
+    max-width: 100vw;
+  }
+}

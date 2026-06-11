@@ -64,6 +64,54 @@ Browser opens to http://localhost:4200 automatically.
 
 ---
 
+## NLQ Prototype (OpenAI-backed)
+
+The dashboard now includes an NLQ chat panel:
+- Use the `Ask NLQ` button on any chart card or KPI card
+- The panel opens on the right and sends your question with active filters
+- Backend endpoint: `POST /api/nlq/query`
+
+Set your API key before running the backend:
+
+```bash
+export OPENAI_API_KEY="your_key_here"
+```
+
+New NLQ endpoints:
+- `GET /api/nlq/context`
+- `GET /api/nlq/context/{chart_id}`
+- `POST /api/nlq/query`
+
+---
+
+## Docker Quick Start
+
+1. Create local env file from example:
+
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` and set `OPENAI_API_KEY`.
+
+3. Build and run both services:
+
+```bash
+docker compose up --build
+```
+
+4. Open:
+- Frontend: http://localhost:4200
+- Backend docs: http://localhost:8000/docs
+
+Stop stack:
+
+```bash
+docker compose down
+```
+
+---
+
 ## Python 3.9 — one cosmetic warning
 
 Python 3.9 is the minimum for pandas 2.2.3. Everything works correctly,

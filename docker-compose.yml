@@ -1,0 +1,20 @@
+version: '3.9'
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: fnma-reporting-backend
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CORS_ALLOW_ORIGINS=http://localhost:4200
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./angular-app
+    container_name: fnma-reporting-frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"

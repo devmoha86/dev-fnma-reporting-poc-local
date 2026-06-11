@@ -15,7 +15,7 @@
 
 import {
   Component, Input, OnChanges, SimpleChanges,
-  ViewChild, ElementRef, ChangeDetectorRef, inject
+  ViewChild, ElementRef, ChangeDetectorRef, inject, Output, EventEmitter
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -35,6 +35,14 @@ declare const Plotly: any;
       <!-- Card title bar -->
       <div class="chart-card-title">
         <span>{{ payload?.title || slug }}</span>
+        <button
+          type="button"
+          class="nlq-btn"
+          title="Ask NLQ assistant"
+          (click)="openNlq()"
+        >
+          Ask NLQ
+        </button>
       </div>
 
       <!-- Loading shimmer (shown while waiting for FastAPI response) -->
@@ -69,6 +77,12 @@ export class ChartComponent implements OnChanges {
 
   /** Set to true to make this chart span both grid columns. */
   @Input() wide = false;
+
+  /** Stable chart identifier used by NLQ context endpoint. */
+  @Input() chartId!: string;
+
+  /** Emit to parent when user asks NLQ for this chart. */
+  @Output() askNlq = new EventEmitter<{ chartId: string; title: string }>();
 
   /** The native div Plotly renders into. */
   @ViewChild('host') hostEl!: ElementRef<HTMLDivElement>;
@@ -139,5 +153,13 @@ export class ChartComponent implements OnChanges {
         responsive:     true,
       }
     );
+  }
+
+  openNlq(): void {
+    const fallbackId = this.slug;
+    this.askNlq.emit({
+      chartId: this.chartId || fallbackId,
+      title: this.payload?.title || this.slug,
+    });
   }
 }
