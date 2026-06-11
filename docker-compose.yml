@@ -6,6 +6,7 @@ services:
     container_name: fnma-reporting-backend
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-nano}
       - CORS_ALLOW_ORIGINS=http://localhost:4200
     ports:
       - "8000:8000"

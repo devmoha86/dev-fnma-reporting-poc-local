@@ -197,9 +197,10 @@ def build_data_summary(df: pd.DataFrame) -> dict:
     }
 
 
-def call_openai_nlq(prompt: str, model: str = "gpt-4.1-mini") -> str:
+def call_openai_nlq(prompt: str, model: Optional[str] = None) -> str:
     """Call OpenAI Responses API using stdlib HTTP for lightweight setup."""
     api_key = os.getenv("OPENAI_API_KEY")
+    model_name = model or os.getenv("OPENAI_MODEL", "gpt-4.1-nano")
     if not api_key:
         raise HTTPException(
             status_code=400,
@@ -207,7 +208,7 @@ def call_openai_nlq(prompt: str, model: str = "gpt-4.1-mini") -> str:
         )
 
     payload = {
-        "model": model,
+        "model": model_name,
         "input": prompt,
         "temperature": 0.2,
     }

@@ -19,3 +19,8 @@ ENV/
 # Angular build/cache artifacts
 angular-app/dist/
 angular-app/.angular/
+
+# Local secret env files
+.env
+.env.*
+!.env.example
