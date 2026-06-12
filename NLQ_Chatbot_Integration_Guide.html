@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NLQ Chatbot Integration — Fannie Mae Reporting Dashboard</title>
+<style>
+  :root {
+    --fm-navy:#1B2A4A; --fm-blue:#2557A7; --fm-blue-lt:#E8F0FB;
+    --fm-teal:#1D9E75; --fm-teal-lt:#E1F5EE;
+    --fm-amber:#BA7517; --fm-amber-lt:#FAEEDA;
+    --fm-coral:#D85A30; --fm-coral-lt:#FAECE7;
+    --fm-purple:#6B3FAA; --fm-purple-lt:#F3E8FB;
+    --fm-gray:#5F5E5A; --fm-gray-lt:#F1EFE8;
+    --fm-border:#D3D1C7; --fm-bg:#FAFAF8; --fm-white:#FFFFFF;
+    --fm-text:#1B2A4A; --fm-text-2:#5F5E5A;
+    --font:'Segoe UI',system-ui,sans-serif;
+    --mono:'Cascadia Code','Fira Code','Consolas',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--fm-bg);color:var(--fm-text);font-size:15px;line-height:1.65}
+
+  .hero{background:var(--fm-navy);color:#fff;padding:56px 48px 48px}
+  .hero-eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#90AFDD;margin-bottom:14px}
+  .hero h1{font-size:30px;font-weight:600;line-height:1.25;margin-bottom:14px;max-width:720px}
+  .hero p{color:#B8CBE8;font-size:15px;max-width:640px;margin-bottom:28px}
+  .hero-pills{display:flex;gap:10px;flex-wrap:wrap}
+  .hero-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 14px;font-size:12px;color:#D0E0F4;font-weight:500}
+
+  .page{max-width:1080px;margin:0 auto;padding:0 32px}
+
+  .badge-new{display:inline-block;background:var(--fm-teal);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:4px;text-transform:uppercase;vertical-align:middle;margin-left:8px}
+  .badge-fix{display:inline-block;background:var(--fm-coral);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:4px;text-transform:uppercase;vertical-align:middle;margin-left:8px}
+
+  .section{padding:52px 0 0}
+  .section-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--fm-blue);margin-bottom:10px}
+  .section h2{font-size:22px;font-weight:600;color:var(--fm-navy);margin-bottom:8px}
+  .section>p{color:var(--fm-text-2);max-width:720px;margin-bottom:32px}
+
+  /* KEY CORRECTION BOX */
+  .diff-box{background:var(--fm-white);border:2px solid var(--fm-coral);border-radius:12px;overflow:hidden;margin:0 0 36px}
+  .diff-header{background:var(--fm-coral);color:#fff;padding:12px 20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px}
+  .diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .diff-col{padding:20px}
+  .diff-col:first-child{border-right:1px solid var(--fm-border);background:#FFF5F3}
+  .diff-col h4{font-size:13px;font-weight:700;margin-bottom:10px}
+  .diff-col h4.wrong{color:var(--fm-coral)} .diff-col h4.right{color:var(--fm-teal)}
+  .diff-col ul{padding-left:16px;font-size:13px;color:var(--fm-text-2);line-height:2}
+
+  /* STEPS */
+  .steps{display:flex;flex-direction:column;gap:0}
+  .step{display:grid;grid-template-columns:56px 1fr;gap:0 24px;padding-bottom:36px;position:relative}
+  .step:not(:last-child)::after{content:'';position:absolute;left:27px;top:48px;bottom:0;width:2px;background:var(--fm-border)}
+  .step-num{width:56px;height:56px;border-radius:50%;background:var(--fm-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;flex-shrink:0;position:relative;z-index:1}
+  .step-num.strands{background:var(--fm-purple)}
+  .step-body h3{font-size:17px;font-weight:600;color:var(--fm-navy);margin-bottom:6px;padding-top:14px}
+  .step-body p{color:var(--fm-text-2);font-size:14px;margin-bottom:12px}
+
+  /* CARDS */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:32px}
+  .card{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:10px;padding:20px}
+  .card-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:12px}
+  .card h4{font-size:14px;font-weight:600;color:var(--fm-navy);margin-bottom:6px}
+  .card p{font-size:13px;color:var(--fm-text-2);line-height:1.55}
+
+  /* FLOW */
+  .flow-wrap{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:12px;padding:28px 20px;margin-bottom:32px;overflow-x:auto}
+  .flow{display:flex;align-items:center;flex-wrap:nowrap;min-width:780px}
+  .flow-node{flex-shrink:0;width:124px;border-radius:10px;padding:14px 10px;text-align:center}
+  .flow-node .fn-icon{font-size:20px;margin-bottom:6px}
+  .flow-node .fn-title{font-size:12px;font-weight:600;line-height:1.35}
+  .flow-node .fn-sub{font-size:10px;margin-top:3px;line-height:1.3;opacity:.8}
+  .flow-arrow{flex-shrink:0;width:38px;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .flow-arrow span{font-size:10px;color:var(--fm-text-2);text-align:center;line-height:1.2}
+  .fn-user{background:var(--fm-blue-lt);color:var(--fm-blue)}
+  .fn-ui{background:var(--fm-teal-lt);color:#0F6E56}
+  .fn-strands{background:var(--fm-purple-lt);color:var(--fm-purple)}
+  .fn-bedrock{background:#FFF0D6;color:#7A4500}
+  .fn-api{background:var(--fm-coral-lt);color:#7A2D10}
+  .fn-data{background:var(--fm-gray-lt);color:var(--fm-gray)}
+
+  /* CODE BLOCKS */
+  .code-wrap{background:#0F172A;border-radius:10px;overflow:hidden;margin:16px 0 24px}
+  .code-header{background:#1E293B;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#94A3B8}
+  .code-header .lang-tag{background:var(--fm-blue);color:#fff;padding:2px 8px;border-radius:4px;font-size:10px}
+  pre{margin:0;padding:20px;overflow-x:auto;color:#E2E8F0;font-family:var(--mono);line-height:1.7;font-size:13px}
+  .k{color:#93C5FD}.s{color:#86EFAC}.c{color:#64748B}.f{color:#FDE68A}.t{color:#F0ABFC}.p{color:#FDA4AF}
+
+  /* PROMPT BLOCKS */
+  .prompt-block{background:#0F172A;border-radius:10px;overflow:hidden;margin:16px 0 28px}
+  .prompt-header{background:var(--fm-blue);padding:10px 18px;display:flex;align-items:center;gap:10px}
+  .prompt-header .ph-badge{background:rgba(255,255,255,.2);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em}
+  .prompt-header .ph-title{font-size:13px;font-weight:600;color:#fff}
+  .prompt-body{padding:18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#CBD5E1;white-space:pre-wrap;word-break:break-word}
+
+  /* CALLOUTS */
+  .callout{border-left:3px solid var(--fm-blue);background:var(--fm-blue-lt);border-radius:0 8px 8px 0;padding:14px 18px;font-size:13.5px;color:#1B2A4A;margin:16px 0 24px}
+  .callout.warn{border-color:var(--fm-amber);background:var(--fm-amber-lt);color:#3B2200}
+  .callout.tip{border-color:var(--fm-teal);background:var(--fm-teal-lt);color:#04342C}
+  .callout.purple{border-color:var(--fm-purple);background:var(--fm-purple-lt);color:#2D1660}
+
+  /* PAYLOAD */
+  .payload-box{background:#0F172A;border-radius:10px;padding:20px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#94A3B8;overflow-x:auto;margin:16px 0 24px}
+  .jk{color:#93C5FD}.jv{color:#86EFAC}.jc{color:#64748B}.jb{color:#F0ABFC}
+
+  /* BOUNDARY */
+  .boundary-box{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:10px;overflow:hidden;margin:16px 0 28px}
+  .boundary-header{background:var(--fm-coral);color:#fff;padding:10px 16px;font-size:13px;font-weight:600}
+  .boundary-body{padding:16px 18px}
+  .boundary-example{background:var(--fm-gray-lt);border-radius:8px;padding:14px;margin:10px 0;font-size:13px}
+  .boundary-q{color:var(--fm-navy);font-weight:500;margin-bottom:6px}
+  .boundary-in{color:#7A2D10}
+  .boundary-out{color:#0F6E56;font-size:12px;margin-top:6px}
+
+  /* DASHBOARD MOCKUP */
+  .dash-mockup{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+  .dash-topbar{background:var(--fm-navy);padding:9px 16px;display:flex;align-items:center;gap:10px}
+  .dash-topbar-left{display:flex;align-items:center;gap:8px;flex:1}
+  .dash-topbar span{color:#90AFDD;font-size:12px}
+  .dash-topbar strong{color:#fff;font-size:12px}
+  .dash-topbar-right{display:flex;align-items:center;gap:6px}
+  /* THE DASHBOARD-LEVEL NLQ ICON */
+  .dash-nlq-icon{
+    background:var(--fm-blue);
+    color:#fff;
+    border:2px solid #4A9EF0;
+    border-radius:8px;
+    padding:5px 12px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;align-items:center;gap:5px;
+    animation:glow-pulse 2s ease-in-out infinite;
+    position:relative;
+  }
+  .dash-nlq-icon::after{
+    content:'← NLQ icon (top-right corner)';
+    position:absolute;
+    right:100%;
+    top:50%;transform:translateY(-50%);
+    margin-right:8px;
+    background:var(--fm-amber);
+    color:#fff;
+    font-size:10px;
+    font-weight:600;
+    padding:3px 8px;
+    border-radius:4px;
+    white-space:nowrap;
+    font-family:var(--font);
+  }
+  @keyframes glow-pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,158,240,.6)}50%{box-shadow:0 0 0 8px rgba(74,158,240,0)}}
+  .dash-dropdown{background:#243457;color:#90AFDD;border:none;border-radius:4px;padding:4px 10px;font-size:11px}
+  .dash-body{display:flex}
+  .dash-sidebar{width:175px;border-right:1px solid var(--fm-border);padding:12px;flex-shrink:0}
+  .dash-sidebar .sn{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fm-text-2);margin:12px 0 5px}
+  .dash-sidebar .si{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:5px;font-size:12px;color:var(--fm-text-2);cursor:pointer}
+  .dash-sidebar .si.active{background:var(--fm-blue-lt);color:var(--fm-blue);font-weight:500}
+  .dash-content{flex:1;padding:14px}
+  .filter-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--fm-gray-lt);border-radius:7px;margin-bottom:12px;font-size:12px}
+  .filter-row label{color:var(--fm-text-2);font-weight:500}
+  .filter-row select{border:1px solid var(--fm-border);border-radius:4px;padding:3px 7px;font-size:11px;background:#fff}
+  .filter-row button{background:var(--fm-blue);color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer}
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+  .kpi-card{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:7px;padding:10px 12px}
+  .kpi-card .kv{font-size:18px;font-weight:600;color:var(--fm-navy)}
+  .kpi-card .kl{font-size:10px;color:var(--fm-text-2);margin-top:1px}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chart-card{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:7px;padding:10px}
+  .chart-card .ct{font-size:10px;font-weight:600;color:var(--fm-navy);margin-bottom:5px;letter-spacing:.03em}
+  .chart-ph{background:var(--fm-gray-lt);border-radius:4px;height:56px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--fm-text-2)}
+
+  /* ANNOTATION CALLOUT */
+  .annotation{display:flex;align-items:flex-start;gap:12px;background:var(--fm-amber-lt);border:1px solid var(--fm-amber);border-radius:8px;padding:14px 18px;margin-bottom:24px}
+  .annotation .ann-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+  .annotation .ann-body{font-size:13.5px;color:#3B2200;line-height:1.6}
+  .annotation .ann-body strong{color:#7A4500}
+
+  /* CONTEXT SCOPE TABLE */
+  .scope-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:28px}
+  .scope-table thead th{background:var(--fm-navy);color:#fff;padding:9px 14px;text-align:left;font-size:12px}
+  .scope-table thead th:first-child{border-radius:8px 0 0 0}
+  .scope-table thead th:last-child{border-radius:0 8px 0 0}
+  .scope-table tbody tr:nth-child(odd){background:var(--fm-gray-lt)}
+  .scope-table tbody tr:nth-child(even){background:var(--fm-white)}
+  .scope-table tbody td{padding:9px 14px;border-bottom:1px solid var(--fm-border);vertical-align:top;line-height:1.5}
+  .tick{color:var(--fm-teal);font-weight:700}
+  .cross{color:var(--fm-coral);font-weight:700}
+
+  /* STRANDS BOX */
+  .strands-box{background:var(--fm-white);border:2px solid var(--fm-purple);border-radius:12px;overflow:hidden;margin:20px 0 28px}
+  .strands-header{background:var(--fm-purple);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px}
+  .strands-header .sh-badge{background:rgba(255,255,255,.2);border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.06em}
+  .strands-body{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .strands-layer{background:var(--fm-purple-lt);border-radius:8px;padding:14px}
+  .strands-layer h5{font-size:12px;font-weight:700;color:var(--fm-purple);margin-bottom:8px;letter-spacing:.06em;text-transform:uppercase}
+  .strands-layer ul{padding-left:14px;font-size:12px;color:var(--fm-text-2);line-height:1.9}
+
+  /* NLQ WINDOW MOCKUP */
+  .nlq-window{background:var(--fm-white);border:2px solid var(--fm-blue);border-radius:12px;overflow:hidden;margin-bottom:28px;max-width:500px}
+  .nlq-win-titlebar{background:#243457;padding:7px 14px;display:flex;align-items:center;justify-content:space-between}
+  .nlq-win-titlebar span{color:#90AFDD;font-size:11px}
+  .nlq-win-titlebar .win-close{color:rgba(255,255,255,.5);font-size:13px}
+  .nlq-win-header{background:var(--fm-blue);padding:12px 16px}
+  .nlq-win-header .wh-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
+  .nlq-win-header .wh-sub{font-size:11px;color:#B8CBE8;line-height:1.5}
+  .nlq-ctx-strip{background:#EBF3FF;border-bottom:1px solid var(--fm-border);padding:10px 14px;font-size:12px;color:var(--fm-blue);line-height:1.6}
+  .nlq-ctx-strip .ctx-label{font-weight:700;display:block;margin-bottom:4px}
+  .nlq-ctx-chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .nlq-ctx-chip{background:var(--fm-blue-lt);border:1px solid #B5D4F4;border-radius:10px;padding:2px 9px;font-size:11px;color:var(--fm-blue)}
+  .nlq-chips{display:flex;gap:7px;flex-wrap:wrap;padding:12px 14px 0}
+  .nlq-chip{background:var(--fm-blue-lt);border:1px solid #B5D4F4;border-radius:20px;padding:5px 12px;font-size:12px;color:var(--fm-blue);cursor:pointer}
+  .nlq-messages{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+  .nlq-msg{max-width:86%}
+  .nlq-msg.user{align-self:flex-end}
+  .nlq-msg.bot{align-self:flex-start}
+  .nlq-msg .mb{padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.5}
+  .nlq-msg.user .mb{background:var(--fm-blue);color:#fff;border-radius:10px 10px 2px 10px}
+  .nlq-msg.bot .mb{background:var(--fm-gray-lt);color:var(--fm-text);border-radius:10px 10px 10px 2px}
+  .nlq-msg.bot.ooc .mb{background:#FFF3CD;border-left:3px solid var(--fm-amber);border-radius:0 10px 10px 0}
+  .nlq-input-row{padding:10px 14px;border-top:1px solid var(--fm-border);display:flex;gap:8px}
+  .nlq-input{flex:1;border:1px solid var(--fm-border);border-radius:7px;padding:7px 12px;font-size:13px;color:var(--fm-text);font-family:var(--font)}
+  .nlq-send{background:var(--fm-blue);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+
+  /* TOC */
+  .toc{background:var(--fm-white);border:1px solid var(--fm-border);border-radius:10px;padding:20px 24px;margin:32px 0}
+  .toc h3{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fm-text-2);margin-bottom:12px}
+  .toc ol{padding-left:18px}
+  .toc li{font-size:14px;padding:3px 0}
+  .toc a{color:var(--fm-blue);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+
+  .spacer{height:56px}
+  .divider{border:none;border-top:1px solid var(--fm-border);margin:48px 0}
+  code{background:var(--fm-gray-lt);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:.88em;color:var(--fm-coral)}
+  h3.sub{font-size:16px;margin:28px 0 6px;color:var(--fm-navy)}
+  p.sub-desc{font-size:13px;color:var(--fm-text-2);margin-bottom:8px}
+
+  @media(max-width:720px){
+    .hero{padding:36px 20px}.page{padding:0 16px}
+    .chart-grid,.diff-grid,.strands-body{grid-template-columns:1fr}
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+    .flow{flex-direction:column}
+    .dash-nlq-icon::after{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="page">
+    <p class="hero-eyebrow">Fannie Mae · Loan Servicing Platform · MSR17051-HT7</p>
+    <h1>NLQ Chatbot Integration — Reporting Dashboard</h1>
+    <p>One NLQ icon, top-right of the dashboard. One click opens the Strands NLQ window with full dashboard-level context — all charts, all KPIs, active filters — from that dashboard's <code>nlq_context.json</code>.</p>
+    <div class="hero-pills">
+      <span class="hero-pill">Angular 18</span>
+      <span class="hero-pill">FastAPI / Python 3.11</span>
+      <span class="hero-pill">Strands Framework</span>
+      <span class="hero-pill">AWS Bedrock (org key)</span>
+      <span class="hero-pill">Dashboard-level NLQ icon</span>
+      <span class="hero-pill">Two dashboards · Two context files</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#correction">Key architectural correction — one icon, dashboard scope</a></li>
+      <li><a href="#overview">What we are building</a></li>
+      <li><a href="#architecture">Full architecture — Strands + Bedrock</a></li>
+      <li><a href="#userflow">User flow — filter → click NLQ icon → window opens</a></li>
+      <li><a href="#context-scope">Context scope — what the NLQ knows about the whole dashboard</a></li>
+      <li><a href="#context-handoff">Context handoff — URL payload from Angular to Strands</a></li>
+      <li><a href="#dashboard-mockup">Dashboard mockup — NLQ icon location</a></li>
+      <li><a href="#nlq-window">NLQ window mockup — dashboard-aware chat</a></li>
+      <li><a href="#boundary">Out-of-context boundary</a></li>
+      <li><a href="#strands-wiring">Strands wiring guide</a></li>
+      <li><a href="#copilot-prompts">VS Code Copilot prompts</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 — CORRECTION -->
+  <div class="section" id="correction">
+    <p class="section-label">Section 1</p>
+    <h2>Key architectural correction <span class="badge-fix">corrected</span></h2>
+    <p>Based on the actual dashboard UI, the NLQ entry point is a single icon in the top-right corner of the dashboard — not per-chart buttons. This changes the context model entirely.</p>
+
+    <div class="diff-box">
+      <div class="diff-header">⚠️ Previous understanding vs actual UI</div>
+      <div class="diff-grid">
+        <div class="diff-col">
+          <h4 class="wrong">✗ Previous (incorrect)</h4>
+          <ul>
+            <li>NLQ icon on every individual chart card</li>
+            <li>Context = one specific chart only</li>
+            <li>User clicks chart → opens NLQ scoped to that chart's API endpoint</li>
+            <li>7 different icon buttons to maintain</li>
+            <li>Context JSON needed per chart selection</li>
+          </ul>
+        </div>
+        <div class="diff-col">
+          <h4 class="right">✓ Actual (correct)</h4>
+          <ul>
+            <li>One NLQ icon in the dashboard top-right corner</li>
+            <li>Context = entire dashboard (all charts + all KPIs)</li>
+            <li>User sets filters first → clicks one NLQ icon → window opens with full dashboard awareness</li>
+            <li>One icon button per dashboard to maintain</li>
+            <li>Context JSON = one file per dashboard covering all components</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="annotation">
+      <div class="ann-icon">📍</div>
+      <div class="ann-body">
+        <strong>From the dashboard image:</strong> The NLQ icon is the cluster of small icons in the <strong>top-right corner of the content area</strong>, next to the Status KPI card — visible as 3 small square buttons at the right edge of the KPI row. This is a dashboard-level action, not a chart-level action. The active filter state (Servicer Number, Servicer Name, Analyst Name) at the time of click is what scopes the NLQ conversation.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 2 — OVERVIEW -->
+  <div class="section" id="overview">
+    <p class="section-label">Section 2</p>
+    <h2>What we are building</h2>
+    <p>When the user clicks the NLQ icon in the top-right of the dashboard, the Strands NLQ window opens pre-loaded with the full dashboard context — every chart, every KPI, all active filters, and all API endpoints — so the user can ask any question about what they are currently seeing.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon" style="background:var(--fm-blue-lt)">🎯</div>
+        <h4>One icon, full dashboard context</h4>
+        <p>The NLQ icon at top-right opens a window aware of <em>all</em> charts and KPIs simultaneously — Delinquency Trend, Loan Count, Portfolio Balance, Status Distribution, and all three KPI cards.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:var(--fm-teal-lt)">🗂️</div>
+        <h4>Filter state is the scope</h4>
+        <p>The active filter bar values (Servicer Number, Servicer Name, Analyst Name) at click time narrow what the NLQ answers. Selecting SVC-003 before clicking means every Strands tool call uses SVC-003 as the default filter.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:var(--fm-purple-lt)">🧠</div>
+        <h4>Strands + Bedrock powers answers</h4>
+        <p>The NLQ backend uses the Strands framework with the org AWS Bedrock API key. Your FastAPI endpoints are registered as Strands tools. The NLQ app has its own UI — Angular just launches the window.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:var(--fm-coral-lt)">🚧</div>
+        <h4>Hard context boundary</h4>
+        <p>Questions outside the dashboard's data scope return a fixed message: "This is outside the current dashboard context — a new query would need to be built." No hallucination.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 3 — ARCHITECTURE -->
+  <div class="section" id="architecture">
+    <p class="section-label">Section 3</p>
+    <h2>Full architecture — Strands + Bedrock</h2>
+    <p>Five runtime components. Angular assembles context and opens the window. The Strands app owns the entire chat experience. Your FastAPI is the only data source.</p>
+
+    <div class="flow-wrap">
+      <div class="flow">
+        <div class="flow-node fn-user">
+          <div class="fn-icon">👤</div>
+          <div class="fn-title">User</div>
+          <div class="fn-sub">Sets filters · clicks NLQ icon (top-right)</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="34" height="16" viewBox="0 0 34 16"><line x1="2" y1="8" x2="28" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a1)"/><defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>window.open()</span>
+        </div>
+        <div class="flow-node fn-ui">
+          <div class="fn-icon">🖥</div>
+          <div class="fn-title">Angular MFE</div>
+          <div class="fn-sub">Builds full dashboard context URL</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="34" height="16" viewBox="0 0 34 16"><line x1="2" y1="8" x2="28" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a2)"/><defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>dashboard context</span>
+        </div>
+        <div class="flow-node fn-strands">
+          <div class="fn-icon">🧠</div>
+          <div class="fn-title">Strands NLQ UI</div>
+          <div class="fn-sub">Chat window · full dashboard scope</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="34" height="16" viewBox="0 0 34 16"><line x1="2" y1="8" x2="28" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a3)"/><defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>LLM call</span>
+        </div>
+        <div class="flow-node fn-bedrock">
+          <div class="fn-icon">☁️</div>
+          <div class="fn-title">AWS Bedrock</div>
+          <div class="fn-sub">Org API key · Strands agent</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="34" height="16" viewBox="0 0 34 16"><line x1="2" y1="8" x2="28" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a4)"/><defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>tool call</span>
+        </div>
+        <div class="flow-node fn-api">
+          <div class="fn-icon">⚙️</div>
+          <div class="fn-title">FastAPI Backend</div>
+          <div class="fn-sub">Your Docker · rejected_events.py</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="strands-box">
+      <div class="strands-header">
+        <span class="sh-badge">STRANDS</span>
+        <h4>Strands NLQ app internals (other developer's machine)</h4>
+      </div>
+      <div class="strands-body">
+        <div class="strands-layer">
+          <h5>Context loader</h5>
+          <ul>
+            <li>Parses <code>dashboard_id</code> + <code>active_filters</code> + <code>reporting_base</code> from URL params on window load</li>
+            <li>Fetches full <code>nlq_context.json</code> via <code>GET /api/nlq/context/{dashboard_id}</code> from your FastAPI</li>
+            <li>Builds <code>chart_contexts[]</code> index — all charts and KPIs in one lookup table</li>
+          </ul>
+        </div>
+        <div class="strands-layer">
+          <h5>Agent + system prompt</h5>
+          <ul>
+            <li>System prompt built from <code>global_context.system_prompt_prefix</code> + all chart <code>system_prompt_context</code> values combined</li>
+            <li>Active filter state injected as default scope</li>
+            <li>All <code>answerable_questions[]</code> across every chart listed as scope</li>
+            <li>All <code>unanswerable_questions[]</code> listed as guardrails</li>
+          </ul>
+        </div>
+        <div class="strands-layer">
+          <h5>Tools (one per API endpoint)</h5>
+          <ul>
+            <li><code>@tool get_rejected_events_summary()</code></li>
+            <li><code>@tool get_rejected_events_by_servicer(servicer_id, period)</code></li>
+            <li>Strands selects the right tool based on what the user asks about</li>
+            <li>Filter defaults pre-filled from URL context</li>
+          </ul>
+        </div>
+        <div class="strands-layer">
+          <h5>Boundary check</h5>
+          <ul>
+            <li>Local check against combined <code>unanswerable_questions[]</code> before any Bedrock call</li>
+            <li>Boundary hit → fixed response, no API cost</li>
+            <li>In-scope → Bedrock + Strands tool dispatch</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 4 — USER FLOW -->
+  <div class="section" id="userflow">
+    <p class="section-label">Section 4</p>
+    <h2>User flow — filter → click NLQ icon → window opens</h2>
+    <p>Eight steps. The NLQ icon is clicked once at the dashboard level — not per chart.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>User selects filters from the dashboard filter bar</h3>
+          <p>User picks Analyst Name, Servicer Number(s), or Servicer Name from the left sidebar and filter bar, then clicks Submit / Apply. Angular stores: <code>activeFilters = { analyst_name, servicer_numbers[], servicer_name }</code>. The charts re-render with filtered data.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>User clicks the NLQ icon — top-right corner of the dashboard</h3>
+          <p>The existing icon cluster in the top-right of the content area includes the NLQ button. Clicking it fires <code>openNlqWindow()</code> in the Angular component. No hover needed — this is a persistent visible button, always accessible from any state of the dashboard.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Angular captures the full dashboard state at click time</h3>
+          <p>The handler reads: the current <code>dashboard_id</code> (from the dropdown — "Operations Dashboard" or the route), all active filter values, the logged-in user, and the <code>reporting_base</code> URL. It does <em>not</em> need to know which chart the user was looking at — the context covers all of them.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>Angular encodes context into the NLQ URL and opens the window</h3>
+          <p><code>window.open(nlqUrl, 'nlq_chat', 'width=860,height=740')</code> launches the Strands NLQ app. The URL carries <code>dashboard_id</code>, active filter state, user name, and your FastAPI base URL. The full context JSON is fetched by the NLQ app on load from your <code>/api/nlq/context/{dashboard_id}</code> endpoint.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num strands">5</div>
+        <div class="step-body">
+          <h3>Strands NLQ window loads — fetches full dashboard context JSON</h3>
+          <p>The Strands app reads the URL params and calls <code>GET {reporting_base}/api/nlq/context/{dashboard_id}</code> to get the complete <code>nlq_context.json</code> for that dashboard. It builds the combined system prompt covering all charts and KPIs, renders the context strip, and shows suggestion chips drawn from across all <code>suggested_followups[]</code>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num strands">6</div>
+        <div class="step-body">
+          <h3>User asks a question — boundary check runs first</h3>
+          <p>Before any Bedrock call, the NLQ app checks whether the question matches any entry in the combined <code>unanswerable_questions[]</code> from all chart contexts. If matched → local boundary message, no API cost. If clear → Strands routes to Bedrock with the full dashboard system prompt.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num strands">7</div>
+        <div class="step-body">
+          <h3>Strands selects the right tool and calls your FastAPI</h3>
+          <p>Bedrock decides which Strands tool answers the question — <code>get_rejected_events_summary()</code> for KPI questions, <code>get_rejected_events_by_servicer()</code> for servicer-level detail. The active filter values from the URL params are passed as default query params. The FastAPI call goes to your machine IP on port 8000.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <h3>Answer rendered with follow-up suggestions covering the full dashboard</h3>
+          <p>The Strands UI shows the natural-language answer. Follow-up chips cover the breadth of the dashboard: "Show Portfolio Balance breakdown", "Compare all servicers on delinquency", "Show Status Distribution as table", "Add loan count column". The user can pivot across any chart topic without reopening the window.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 5 — CONTEXT SCOPE -->
+  <div class="section" id="context-scope">
+    <p class="section-label">Section 5</p>
+    <h2>Context scope — what the NLQ knows about the whole dashboard</h2>
+    <p>The dashboard-level context file covers every component. The Strands system prompt combines all of them into one unified knowledge scope so the user can ask across charts freely.</p>
+
+    <table class="scope-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>NLQ can answer about this?</th>
+          <th>Strands tool used</th>
+          <th>Example questions in scope</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>KPI — Total Loans</strong><br><small>10,756</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_summary</code></td>
+          <td>"How many total loans are there?" · "Break down total loans by servicer"</td>
+        </tr>
+        <tr>
+          <td><strong>KPI — Avg Delinquency</strong><br><small>3.6%</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_summary</code></td>
+          <td>"What is the portfolio delinquency rate?" · "Which servicer exceeds the average?"</td>
+        </tr>
+        <tr>
+          <td><strong>KPI — Portfolio Balance</strong><br><small>$1,525M</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_summary</code></td>
+          <td>"What is the total portfolio value?" · "Show portfolio balance by servicer"</td>
+        </tr>
+        <tr>
+          <td><strong>Chart — Delinquency Rate Trend</strong><br><small>multi-line by servicer</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_by_servicer</code></td>
+          <td>"Which servicer has highest rate?" · "Show SVC-003 trend only" · "Show as table"</td>
+        </tr>
+        <tr>
+          <td><strong>Chart — Loan Count by Region</strong><br><small>grouped bar</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_by_servicer</code></td>
+          <td>"Which region has most loans?" · "Compare NORTH vs SOUTH for SVC-007"</td>
+        </tr>
+        <tr>
+          <td><strong>Chart — Portfolio Balance</strong><br><small>horizontal bar</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_by_servicer</code></td>
+          <td>"Show SVC-001 share of total" · "Which servicer has lowest balance?"</td>
+        </tr>
+        <tr>
+          <td><strong>Chart — Servicer Status Distribution</strong><br><small>donut</small></td>
+          <td><span class="tick">✓ Yes</span></td>
+          <td><code>get_rejected_events_summary</code></td>
+          <td>"What % of servicers are active?" · "Show status breakdown as table"</td>
+        </tr>
+        <tr>
+          <td><strong>Escrow balances</strong></td>
+          <td><span class="cross">✗ Out of scope</span></td>
+          <td>—</td>
+          <td>Boundary message: "Escrow data is in the Loan Escrow Service, not this dashboard"</td>
+        </tr>
+        <tr>
+          <td><strong>Root cause / why questions</strong></td>
+          <td><span class="cross">✗ Out of scope</span></td>
+          <td>—</td>
+          <td>Boundary message: "Root cause analysis is not available in the current API data"</td>
+        </tr>
+        <tr>
+          <td><strong>Interest rates / loan terms</strong></td>
+          <td><span class="cross">✗ Out of scope</span></td>
+          <td>—</td>
+          <td>Boundary message: "Loan term data requires a new query against a different source"</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Why dashboard-level scope is better than per-chart scope:</strong> The user can ask "Which servicer has both the highest delinquency rate AND the lowest portfolio balance?" — a cross-chart question that per-chart icons could never answer. The Strands agent has access to all tool endpoints simultaneously and can call multiple tools in one conversation turn to compose a complete answer.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 6 — CONTEXT HANDOFF -->
+  <div class="section" id="context-handoff">
+    <p class="section-label">Section 6</p>
+    <h2>Context handoff — URL payload from Angular to Strands</h2>
+    <p>What Angular encodes in the URL when the NLQ icon is clicked. The Strands app fetches the full JSON on load — the URL only needs the minimal bootstrap params.</p>
+
+    <h3 class="sub">URL params (lean — Strands fetches the rest)</h3>
+    <div class="payload-box"><span class="jc">// URL opened by window.open() — Strands fetches full context JSON via API</span>
+<span class="jc">// http://NLQ-DEV-IP:NLQ-PORT/nlq?...</span>
+
+<span class="jk">{</span>
+  <span class="jc">// Which dashboard the user clicked NLQ from</span>
+  <span class="jk">"dashboard_id"</span>:     <span class="jv">"operations_dashboard"</span>,    <span class="jc">// or "rejected_events"</span>
+
+  <span class="jc">// Filter state from the dashboard at click time</span>
+  <span class="jk">"analyst_name"</span>:     <span class="jv">"Chi Nicholas"</span>,
+  <span class="jk">"servicer_number"</span>:  <span class="jv">"SVC-003"</span>,               <span class="jc">// "All" if no filter selected</span>
+  <span class="jk">"servicer_name"</span>:   <span class="jv">"Cardinal Servicing Group"</span>,
+
+  <span class="jc">// Base URL of the Reporting Engine so Strands can call it AND fetch context</span>
+  <span class="jk">"reporting_base"</span>:   <span class="jv">"http://192.168.1.45:8000"</span>,
+
+  <span class="jc">// Strands fetches the full nlq_context.json from this on load:</span>
+  <span class="jc">// GET {reporting_base}/api/nlq/context/{dashboard_id}</span>
+<span class="jk">}</span></div>
+
+    <div class="callout purple">
+      <strong>Why not pass the full JSON in the URL?</strong> The complete <code>nlq_context.json</code> for a dashboard covering 7 components would make the URL too long. Instead, the Strands app uses <code>reporting_base</code> + <code>dashboard_id</code> to fetch the full context from your FastAPI's <code>GET /api/nlq/context/{dashboard_id}</code> endpoint. This also means the context is always fresh — if you update the JSON and restart the backend, the NLQ app gets the latest version on next open.
+    </div>
+
+    <h3 class="sub">Angular — openNlqWindow() implementation</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span>Angular — NLQ icon click handler</span><span class="lang-tag">TS</span></div>
+      <pre><span class="c">// In reporting-dashboard.component.ts</span>
+<span class="f">openNlqWindow</span>(): <span class="k">void</span> {
+  <span class="c">// Read current dashboard ID from route or dropdown value</span>
+  <span class="k">const</span> dashboardId = <span class="k">this</span>.currentDashboardId;  <span class="c">// 'operations_dashboard' or 'rejected_events'</span>
+
+  <span class="c">// Capture filter state at click time</span>
+  <span class="k">const</span> params = <span class="k">new</span> URLSearchParams({
+    dashboard_id:    dashboardId,
+    analyst_name:    <span class="k">this</span>.filters.analystName    ?? <span class="s">'All'</span>,
+    servicer_number: <span class="k">this</span>.filters.servicerNumber ?? <span class="s">'All'</span>,
+    servicer_name:   <span class="k">this</span>.filters.servicerName   ?? <span class="s">'All'</span>,
+    reporting_base:  environment.reportingEngineUrl,  <span class="c">// 'http://YOUR-IP:8000'</span>
+  });
+
+  <span class="k">const</span> nlqUrl = <span class="s">`${</span>environment.nlqEngineUrl<span class="s">}/nlq?${</span>params.toString()<span class="s">}`</span>;
+  <span class="k">const</span> win = window.open(nlqUrl, <span class="s">'fannie_nlq'</span>, <span class="s">'width=860,height=740,resizable=yes'</span>);
+
+  <span class="k">if</span> (!win) {
+    <span class="c">// Popup blocked — show snackbar</span>
+    <span class="k">this</span>.snackbar.open(
+      <span class="s">'Allow popups for this site to open the NLQ assistant.'</span>,
+      <span class="s">'Dismiss'</span>, { duration: <span class="t">5000</span> }
+    );
+  }
+}</pre>
+    </div>
+
+    <div class="callout">
+      <strong>Where to wire this in the template:</strong> Find the existing icon button group in the top-right of the dashboard content area (the cluster of 3 icons next to the Status KPI card visible in the dashboard image) and bind the NLQ icon to <code>(click)="openNlqWindow()"</code>.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 7 — DASHBOARD MOCKUP -->
+  <div class="section" id="dashboard-mockup">
+    <p class="section-label">Section 7</p>
+    <h2>Dashboard mockup — NLQ icon location</h2>
+    <p>The NLQ icon (highlighted, pulsing below) is in the <strong>top-right of the content area</strong>, next to the Status KPI card — matching the actual dashboard. It is always visible, not hover-triggered.</p>
+
+    <div class="dash-mockup">
+      <div class="dash-topbar">
+        <div class="dash-topbar-left">
+          <span>Fannie Mae</span>
+          <strong>Loan Management — Servicing</strong>
+          <select class="dash-dropdown"><option>Operations Dashboard ▾</option></select>
+        </div>
+        <div class="dash-topbar-right">
+          <!-- THE SINGLE DASHBOARD-LEVEL NLQ ICON -->
+          <button class="dash-nlq-icon" onclick="alert('Opens NLQ window with full dashboard context')">
+            💬 Ask NLQ
+          </button>
+        </div>
+      </div>
+      <div class="dash-body">
+        <div class="dash-sidebar">
+          <div style="padding:8px;"><input style="width:100%;border:1px solid var(--fm-border);border-radius:4px;padding:5px 8px;font-size:11px" placeholder="Fannie Mae Loan Search"/></div>
+          <div style="padding:6px 8px;font-size:11px;color:var(--fm-text-2)">Analyst Name</div>
+          <div style="padding:0 8px 6px"><select style="width:100%;font-size:11px;border:1px solid var(--fm-border);border-radius:4px;padding:4px"><option>— Select —</option></select></div>
+          <div style="padding:6px 8px;font-size:11px;color:var(--fm-text-2)">Servicer Number(s)</div>
+          <div style="padding:0 8px 6px"><select style="width:100%;font-size:11px;border:1px solid var(--fm-border);border-radius:4px;padding:4px"><option>— Select —</option></select></div>
+          <button style="margin:4px 8px;width:calc(100% - 16px);background:var(--fm-blue);color:#fff;border:none;border-radius:4px;padding:6px;font-size:11px;font-weight:600;cursor:pointer">Submit</button>
+          <div class="sn">Dashboard</div>
+          <div class="si">Business Process Observability</div>
+          <div class="sn">Services</div>
+          <div class="si">Servicer Cash Position</div>
+          <div class="si">Loan Position</div>
+          <div class="si">Loan Escrow</div>
+          <div class="si active">Reporting</div>
+        </div>
+        <div class="dash-content">
+          <div class="filter-row">
+            <label>Servicer Number</label>
+            <select><option>All</option><option>SVC-003</option></select>
+            <label>Servicer Name</label>
+            <select><option>All</option></select>
+            <button>Apply</button>
+            <button style="background:none;border:1px solid var(--fm-border);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer">Reset</button>
+          </div>
+          <div class="kpi-row">
+            <div class="kpi-card"><div class="kv">10,756</div><div class="kl">Total Loans</div></div>
+            <div class="kpi-card"><div class="kv">3.6%</div><div class="kl">Avg Delinquency</div></div>
+            <div class="kpi-card"><div class="kv">$1,525M</div><div class="kl">Portfolio Balance</div></div>
+            <div class="kpi-card" style="background:var(--fm-gray-lt)"><div class="kv" style="font-size:12px;color:var(--fm-text-2)">Status</div><div class="kl">—</div></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button style="background:var(--fm-blue);color:#fff;border:none;border-radius:4px;padding:4px 14px;font-size:11px;font-weight:600;cursor:pointer">Charts</button>
+            <button style="background:none;border:1px solid var(--fm-border);border-radius:4px;padding:4px 14px;font-size:11px;cursor:pointer">Table</button>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card"><div class="ct">DELINQUENCY RATE TREND (%)</div><div class="chart-ph">📈 Multi-line · 8 servicers · Apr 2026</div></div>
+            <div class="chart-card"><div class="ct">LOAN COUNT BY REGION &amp; SERVICER</div><div class="chart-ph">📊 Grouped bar · NORTH / SOUTH / EAST / WEST</div></div>
+            <div class="chart-card"><div class="ct">PORTFOLIO BALANCE — USD MILLIONS (AS OF 2026-04-03)</div><div class="chart-ph">📉 Horizontal bar · 8 servicers</div></div>
+            <div class="chart-card"><div class="ct">SERVICER STATUS DISTRIBUTION (AS OF 2026-04-03)</div><div class="chart-ph">🍩 Donut</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="annotation">
+      <div class="ann-icon">👆</div>
+      <div class="ann-body">
+        <strong>The pulsing "💬 Ask NLQ" button</strong> in the top-right of the topbar above is the single NLQ entry point. In the real Angular template it is part of the existing icon cluster next to the Status card. No icons on individual charts — one button serves the entire dashboard. Clicking it passes the current filter state (Servicer Number, Servicer Name, Analyst Name) to the Strands window.
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 8 — NLQ WINDOW -->
+  <div class="section" id="nlq-window">
+    <p class="section-label">Section 8</p>
+    <h2>NLQ window mockup — cross-chart comparisons from API endpoints</h2>
+    <p>The Strands NLQ window reads <code>api_endpoint</code> from each chart's context entry and registers a callable tool per unique endpoint. When a user asks a cross-chart question, Strands calls <strong>multiple tools in one turn</strong> and synthesises the answer — no manual wiring needed per question.</p>
+
+    <!-- HOW CROSS-CHART WORKS -->
+    <div style="background:var(--fm-white);border:1px solid var(--fm-border);border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <div style="background:var(--fm-purple);color:#fff;padding:11px 18px;font-size:13px;font-weight:600;">
+        🔀 How cross-chart comparison works — context JSON → Strands tools → parallel fetch → answer
+      </div>
+      <div style="padding:20px;overflow-x:auto;">
+        <!-- MINI FLOW -->
+        <div style="display:flex;align-items:flex-start;gap:0;min-width:700px;font-size:12px;">
+
+          <div style="flex-shrink:0;width:160px;background:var(--fm-blue-lt);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:6px;">📋</div>
+            <div style="font-weight:600;color:var(--fm-navy);margin-bottom:6px;">nlq_context.json</div>
+            <div style="color:var(--fm-text-2);font-size:11px;line-height:1.6;">
+              chart_id: delinquency_rate_trend<br>
+              <strong>api_endpoint: /api/rejected-events/by-servicer</strong><br><br>
+              chart_id: portfolio_balance<br>
+              <strong>api_endpoint: /api/rejected-events/by-servicer</strong><br><br>
+              chart_id: servicer_status_dist<br>
+              <strong>api_endpoint: /api/rejected-events/summary</strong>
+            </div>
+          </div>
+
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;padding-top:30px;">
+            <svg width="36" height="16" viewBox="0 0 36 16"><line x1="2" y1="8" x2="30" y2="8" stroke="#6B3FAA" stroke-width="1.5" marker-end="url(#px1)"/><defs><marker id="px1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6B3FAA" stroke-width="1.5"/></marker></defs></svg>
+            <span style="font-size:10px;color:var(--fm-purple);margin-top:3px;text-align:center;">auto-register</span>
+          </div>
+
+          <div style="flex-shrink:0;width:180px;background:var(--fm-purple-lt);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:6px;">🔧</div>
+            <div style="font-weight:600;color:var(--fm-purple);margin-bottom:6px;">Strands Tools</div>
+            <div style="color:var(--fm-text-2);font-size:11px;line-height:1.8;text-align:left;">
+              <strong>1 tool per unique endpoint:</strong><br>
+              <code style="font-size:10px;background:#e8e0f8;padding:1px 4px;border-radius:3px;">tool_by_servicer()</code><br>
+              → /api/rejected-events/by-servicer<br>
+              Covers: delinquency trend,<br>
+              loan count, portfolio balance<br><br>
+              <code style="font-size:10px;background:#e8e0f8;padding:1px 4px;border-radius:3px;">tool_summary()</code><br>
+              → /api/rejected-events/summary<br>
+              Covers: KPIs, status dist.
+            </div>
+          </div>
+
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;padding-top:30px;">
+            <svg width="36" height="16" viewBox="0 0 36 16"><line x1="2" y1="8" x2="30" y2="8" stroke="#6B3FAA" stroke-width="1.5" marker-end="url(#px2)"/><defs><marker id="px2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6B3FAA" stroke-width="1.5"/></marker></defs></svg>
+            <span style="font-size:10px;color:var(--fm-purple);margin-top:3px;text-align:center;">cross-chart question</span>
+          </div>
+
+          <div style="flex-shrink:0;width:170px;background:var(--fm-amber-lt);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:6px;">🧠</div>
+            <div style="font-weight:600;color:var(--fm-amber);margin-bottom:6px;">Bedrock decides</div>
+            <div style="color:var(--fm-text-2);font-size:11px;line-height:1.6;text-align:left;">
+              User: "Compare delinquency rate vs portfolio balance across servicers"<br><br>
+              Bedrock sees both tools in context and calls <strong>both</strong> in parallel:<br>
+              → tool_by_servicer() for delinquency<br>
+              → tool_by_servicer() for balance<br>
+              (same endpoint, Strands handles it)
+            </div>
+          </div>
+
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:44px;padding-top:30px;">
+            <svg width="36" height="16" viewBox="0 0 36 16"><line x1="2" y1="8" x2="30" y2="8" stroke="#6B3FAA" stroke-width="1.5" marker-end="url(#px3)"/><defs><marker id="px3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6B3FAA" stroke-width="1.5"/></marker></defs></svg>
+            <span style="font-size:10px;color:var(--fm-purple);margin-top:3px;text-align:center;">synthesised</span>
+          </div>
+
+          <div style="flex:1;min-width:160px;background:var(--fm-teal-lt);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:18px;margin-bottom:6px;">💬</div>
+            <div style="font-weight:600;color:var(--fm-teal);margin-bottom:6px;">Synthesised answer</div>
+            <div style="color:var(--fm-text-2);font-size:11px;line-height:1.6;text-align:left;">
+              Bedrock merges both API responses and answers:<br><br>
+              "SVC-007 has the highest delinquency (4.8%) but only the 3rd largest portfolio ($187M). SVC-001 has the lowest rate (2.9%) and the 2nd largest portfolio ($221M)…"
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- KEY INSIGHT CALLOUT -->
+    <div class="callout purple">
+      <strong>The key insight:</strong> The <code>nlq_context.json</code> tells Strands <em>which charts use which endpoints</em> via <code>"api_endpoint"</code>. Strands registers one tool per unique endpoint. When a cross-chart question arrives, Bedrock sees all tools in its context and decides which to call — including calling the same endpoint twice with different params, or calling two different endpoints and joining the results. Your FastAPI doesn't change at all.
+    </div>
+
+    <!-- CROSS-CHART EXAMPLE TABLE -->
+    <h3 class="sub">Cross-chart question → tool call mapping</h3>
+    <p class="sub-desc">How Bedrock maps common comparison questions to API calls, derived from reading the chart metadata in the context JSON.</p>
+    <table class="scope-table" style="margin-bottom:28px;">
+      <thead>
+        <tr>
+          <th>User question</th>
+          <th>Charts involved (from context JSON)</th>
+          <th>Tool calls Strands makes</th>
+          <th>How answer is formed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>"Compare delinquency rate vs portfolio balance across servicers"</td>
+          <td>Delinquency Rate Trend + Portfolio Balance</td>
+          <td><code>tool_by_servicer()</code> × 1 call — same endpoint returns both fields in the response</td>
+          <td>Single API response contains <code>pct_of_total_delinquent</code> and <code>outstanding_rejected_events</code> per servicer — Bedrock joins them in the answer</td>
+        </tr>
+        <tr>
+          <td>"Which region has the most loans AND the worst delinquency?"</td>
+          <td>Loan Count by Region + Delinquency Rate Trend</td>
+          <td><code>tool_by_servicer()</code> × 1 call — region and delinquency both from same endpoint</td>
+          <td>Bedrock groups by region from the servicer response, computes both metrics, compares</td>
+        </tr>
+        <tr>
+          <td>"Show me the overall delinquency KPI and break it down by servicer"</td>
+          <td>Avg Delinquency KPI + Delinquency Rate Trend</td>
+          <td><code>tool_summary()</code> for KPI + <code>tool_by_servicer()</code> for breakdown — 2 tools called sequentially</td>
+          <td>Bedrock shows the 3.6% average first, then the per-servicer detail beneath it</td>
+        </tr>
+        <tr>
+          <td>"Compare servicer status distribution with their loan counts"</td>
+          <td>Servicer Status Distribution + Loan Count by Region</td>
+          <td><code>tool_summary()</code> for status + <code>tool_by_servicer()</code> for loan counts — 2 tools called</td>
+          <td>Bedrock joins status per servicer with loan count, surfaces the combined view</td>
+        </tr>
+        <tr>
+          <td>"Which servicer is performing best across all metrics?"</td>
+          <td>All 4 charts + all 3 KPIs</td>
+          <td><code>tool_summary()</code> + <code>tool_by_servicer()</code> — Bedrock calls both, merges all fields</td>
+          <td>Bedrock scores servicers across delinquency, loan count, portfolio balance, and status — produces a ranked summary</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- NLQ WINDOW MOCKUP with cross-chart conversation -->
+    <div class="nlq-window">
+      <div class="nlq-win-titlebar">
+        <span>🧠 Strands NLQ — Fannie Mae Reporting · Powered by AWS Bedrock</span>
+        <span class="win-close">✕ ▭ —</span>
+      </div>
+      <div class="nlq-win-header">
+        <div class="wh-title">Operations Dashboard — NLQ Assistant</div>
+        <div class="wh-sub">Filter context: Servicer = All · Analyst = Chi Nicholas · As of 2026-04-03</div>
+      </div>
+      <div class="nlq-ctx-strip">
+        <span class="ctx-label">Dashboard scope — I can answer questions about:</span>
+        <div class="nlq-ctx-chips">
+          <span class="nlq-ctx-chip">Delinquency Rate Trend</span>
+          <span class="nlq-ctx-chip">Loan Count by Region</span>
+          <span class="nlq-ctx-chip">Portfolio Balance</span>
+          <span class="nlq-ctx-chip">Servicer Status</span>
+          <span class="nlq-ctx-chip">Total Loans KPI</span>
+          <span class="nlq-ctx-chip">Avg Delinquency KPI</span>
+        </div>
+      </div>
+      <div class="nlq-chips">
+        <span class="nlq-chip">Compare delinquency vs portfolio balance</span>
+        <span class="nlq-chip">Which region has most loans?</span>
+        <span class="nlq-chip">Rank all servicers across metrics</span>
+        <span class="nlq-chip">Show all KPIs as table</span>
+      </div>
+      <div class="nlq-messages">
+
+        <div class="nlq-msg user">
+          <div class="mb">Can you compare the delinquency rate trend with the portfolio balance across all servicers?</div>
+        </div>
+        <!-- tool call indicator -->
+        <div style="align-self:flex-start;font-size:11px;color:var(--fm-purple);background:var(--fm-purple-lt);border-radius:6px;padding:5px 10px;margin-bottom:-4px;">
+          🔧 Fetching data — calling <code>tool_by_servicer()</code> via <code>/api/rejected-events/by-servicer</code>…
+        </div>
+        <div class="nlq-msg bot">
+          <div class="mb">
+            Here is the comparison across all 8 servicers — both metrics from a single API call:<br><br>
+            <small style="font-family:monospace;display:block;background:#e8e8e4;padding:8px;border-radius:5px;line-height:2;font-size:11px;">
+            Servicer            | Delinquency | Portfolio<br>
+            ─────────────────────────────────────────────<br>
+            SVC-001 Apex        |    2.9%     |  $221M  ← lowest rate, 2nd largest<br>
+            SVC-002 Beacon      |    3.1%     |  $198M<br>
+            SVC-003 Cardinal    |    4.2%     |  $164M<br>
+            SVC-004 Delta       |    3.4%     |  $210M<br>
+            SVC-005 Evergreen   |    2.7%     |  $173M  ← best rate<br>
+            SVC-006 Forks       |    3.8%     |  $145M<br>
+            SVC-007 Granite     |    4.8%     |  $187M  ← worst rate<br>
+            SVC-008 Horizon     |    3.3%     |  $227M  ← largest portfolio
+            </small>
+            <br>Notable: <strong>SVC-007 Granite</strong> has both the highest delinquency (4.8%) and is not the largest book — suggesting performance issues rather than volume risk.
+          </div>
+        </div>
+
+        <div class="nlq-msg user">
+          <div class="mb">Now also show me how their loan counts by region break down — and tell me which servicer is best overall.</div>
+        </div>
+        <!-- two tool calls indicator -->
+        <div style="align-self:flex-start;font-size:11px;color:var(--fm-purple);background:var(--fm-purple-lt);border-radius:6px;padding:5px 10px;margin-bottom:-4px;">
+          🔧 Calling <code>tool_by_servicer()</code> + <code>tool_summary()</code> — 2 endpoints, merging results…
+        </div>
+        <div class="nlq-msg bot">
+          <div class="mb">
+            Adding regional loan counts and the summary KPI data:<br><br>
+            <strong>SVC-005 Evergreen Capital Servicing</strong> performs best overall:<br>
+            • Lowest delinquency rate: <strong>2.7%</strong><br>
+            • Balanced regional distribution (NORTH 312, SOUTH 287, EAST 301, WEST 298)<br>
+            • Portfolio balance: $173M (mid-range)<br>
+            • Status: Active<br><br>
+            Data sources used: <code>/api/rejected-events/by-servicer</code> (delinquency, balance, region) + <code>/api/rejected-events/summary</code> (status distribution).
+          </div>
+        </div>
+
+        <div class="nlq-msg user">
+          <div class="mb">What is the escrow balance for SVC-005?</div>
+        </div>
+        <div class="nlq-msg bot ooc">
+          <div class="mb">⚠️ <strong>This is outside the Operations Dashboard context.</strong><br><br>This dashboard covers delinquency rates, loan counts, portfolio balances, and servicer status via the rejected events API. Escrow balance data is in the <strong>Loan Escrow Service</strong> — a separate module not available here.<br><br>To answer this, a new query would need to be built against the Loan Escrow Service endpoint.</div>
+        </div>
+
+      </div>
+      <div class="nlq-input-row">
+        <input class="nlq-input" type="text" placeholder="Ask about any chart or compare across the dashboard…"/>
+        <button class="nlq-send">Send</button>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <strong>What makes cross-chart work seamlessly:</strong> Because both Delinquency Rate Trend and Portfolio Balance share the same <code>api_endpoint</code> (<code>/api/rejected-events/by-servicer</code>) in the context JSON, Strands only needs one tool call to get data for both charts. The response already contains all the fields — Bedrock just presents them side by side. For charts on different endpoints (e.g. summary vs by-servicer), Strands calls both tools and Bedrock joins the results.
+    </div>
+    <div class="callout warn">
+      <strong>Out-of-context response (escrow question above)</strong> — returned without a Bedrock call. The boundary rule fires from the system prompt. The message names the correct service so the user knows where to go next.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 9 — BOUNDARY -->
+  <div class="section" id="boundary">
+    <p class="section-label">Section 9</p>
+    <h2>Out-of-context boundary</h2>
+    <p>The Strands system prompt enforces a strict scope based on the combined <code>answerable_questions[]</code> from every chart in the dashboard's context JSON.</p>
+
+    <div class="boundary-box">
+      <div class="boundary-header">Context boundary rule — injected into Strands system prompt</div>
+      <div class="boundary-body">
+        <div class="code-wrap" style="margin:0 0 16px">
+          <div class="code-header"><span>System prompt boundary clause</span><span class="lang-tag">PROMPT</span></div>
+          <pre>You can answer questions about ANY of the following dashboard components:
+{combined_answerable_questions_from_all_chart_contexts}
+
+If the user asks anything outside this scope — including questions about
+escrow, interest rates, loan origination, case management, or any data
+not returned by these endpoints:
+  {list_of_all_api_endpoints_in_dashboard}
+
+You MUST respond with EXACTLY this message:
+"This question is outside the current [dashboard_title] context.
+This dashboard covers: [one-line summary of answerable topics].
+To answer your question, a new query would need to be built against
+a different data source or endpoint."
+
+Do NOT attempt a partial answer. Do NOT call any tool. Do NOT guess.</pre>
+        </div>
+
+        <div class="boundary-example">
+          <div class="boundary-q">User: "Which servicer has the highest delinquency rate?"</div>
+          <div class="boundary-in">✅ In scope — calls <code>get_rejected_events_by_servicer()</code>, answers from live data</div>
+        </div>
+        <div class="boundary-example">
+          <div class="boundary-q">User: "What caused the delinquency spike on April 1?"</div>
+          <div class="boundary-in">🚧 Out of scope — root cause not in API response</div>
+          <div class="boundary-out">Response: "This is outside the Operations Dashboard context. This dashboard covers delinquency rates, loan counts, portfolio balances, and servicer status. Root cause analysis requires a different data source."</div>
+        </div>
+        <div class="boundary-example">
+          <div class="boundary-q">User: "Show me escrow balances for SVC-003"</div>
+          <div class="boundary-in">🚧 Out of scope — Loan Escrow Service is a separate module</div>
+          <div class="boundary-out">Response: "This is outside the Operations Dashboard context. Escrow data is in the Loan Escrow Service. To answer this, a new query would need to be built against that endpoint."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 10 — STRANDS WIRING -->
+  <div class="section" id="strands-wiring">
+    <p class="section-label">Section 10</p>
+    <h2>Strands wiring guide — for the other developer</h2>
+    <p>What the Strands NLQ app needs to implement to receive the dashboard context and serve answers scoped to the full dashboard.</p>
+
+    <h3 class="sub">1. On window load — parse URL params and fetch context JSON</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span>Strands NLQ app — startup (Python)</span><span class="lang-tag">PY</span></div>
+      <pre><span class="k">import</span> httpx
+<span class="k">from</span> urllib.parse <span class="k">import</span> parse_qs, urlparse
+<span class="k">import</span> json
+
+<span class="k">def</span> <span class="f">bootstrap_from_url</span>(url: str) -> dict:
+    p = parse_qs(urlparse(url).query)
+    get = <span class="k">lambda</span> key, default=<span class="s">""</span>: p.get(key, [default])[0]
+
+    dashboard_id   = get(<span class="s">"dashboard_id"</span>)
+    reporting_base = get(<span class="s">"reporting_base"</span>)
+
+    <span class="c"># Fetch full dashboard context JSON from the Reporting Engine</span>
+    ctx_json = httpx.get(
+        <span class="s">f"{reporting_base}/api/nlq/context/{dashboard_id}"</span>
+    ).json()
+
+    <span class="k">return</span> {
+        <span class="s">"dashboard_id"</span>:    dashboard_id,
+        <span class="s">"reporting_base"</span>:  reporting_base,
+        <span class="s">"analyst_name"</span>:    get(<span class="s">"analyst_name"</span>, <span class="s">"All"</span>),
+        <span class="s">"servicer_number"</span>: get(<span class="s">"servicer_number"</span>, <span class="s">"All"</span>),
+        <span class="s">"servicer_name"</span>:   get(<span class="s">"servicer_name"</span>, <span class="s">"All"</span>),
+        <span class="s">"context_json"</span>:    ctx_json,
+    }</pre>
+    </div>
+
+    <h3 class="sub">2. Build unified system prompt from all chart contexts</h3>
+    <div class="code-wrap">
+      <div class="code-header"><span>Strands — build_dashboard_system_prompt()</span><span class="lang-tag">PY</span></div>
+      <pre><span class="k">def</span> <span class="f">build_dashboard_system_prompt</span>(bootstrap: dict) -> str:
+    ctx   = bootstrap[<span class="s">"context_json"</span>]
+    gcx   = ctx[<span class="s">"global_context"</span>]
+    charts = ctx[<span class="s">"chart_contexts"</span>]
+
+    <span class="c"># Combine answerable questions from ALL charts into one scope</span>
+    all_answerable = []
+    all_unanswerable = []
+    all_endpoints = set()
+    chart_summaries = []
+
+    <span class="k">for</span> c <span class="k">in</span> charts:
+        all_answerable.extend(c[<span class="s">"answerable_questions"</span>])
+        all_unanswerable.extend(c[<span class="s">"unanswerable_questions"</span>])
+        all_endpoints.add(c[<span class="s">"api_endpoint"</span>])
+        chart_summaries.append(<span class="s">f"- {c['chart_title']}: {c['system_prompt_context']}"</span>)
+
+    <span class="k">return</span> <span class="s">f"""{gcx['system_prompt_prefix']}
+
+ACTIVE DASHBOARD: {gcx['dashboard_title']}
+ACTIVE FILTER: Servicer = {bootstrap['servicer_number']} ({bootstrap['servicer_name']})
+ANALYST: {bootstrap['analyst_name']}
+DATA SOURCE BASE URL: {bootstrap['reporting_base']}
+
+DASHBOARD COMPONENTS YOU KNOW ABOUT:
+{chr(10).join(chart_summaries)}
+
+YOU CAN ANSWER questions including:
+{chr(10).join(f'- {q}' for q in all_answerable)}
+
+DATA ENDPOINTS AVAILABLE (as Strands tools):
+{chr(10).join(all_endpoints)}
+
+OUT OF SCOPE — if the question matches any of these patterns, use the boundary response:
+{chr(10).join(f'- {q}' for q in all_unanswerable)}
+
+BOUNDARY RESPONSE (use verbatim when out of scope):
+"This question is outside the current {gcx['dashboard_title']} context.
+This dashboard covers: delinquency rates, loan counts, portfolio balances, and servicer status.
+To answer your question, a new query would need to be built against a different data source."
+"""</span></pre>
+    </div>
+
+    <h3 class="sub">3. Dynamic tool generation — one tool per unique api_endpoint in context JSON</h3>
+    <p class="sub-desc">Instead of hardcoding tools, Strands reads the <code>api_endpoint</code> field from every chart entry in the context JSON and auto-generates one tool per unique endpoint. This means when a new chart is added to the dashboard and the context JSON is updated, the NLQ app automatically gets a new tool — no code change needed.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span>Strands — dynamic tool generation from context JSON api_endpoint fields</span><span class="lang-tag">PY</span></div>
+      <pre><span class="k">from</span> strands <span class="k">import</span> tool, Agent
+<span class="k">from</span> strands.models.bedrock <span class="k">import</span> BedrockModel
+<span class="k">import</span> httpx, re
+
+<span class="k">def</span> <span class="f">build_tools_from_context</span>(bootstrap: dict) -> list:
+    <span class="s">"""
+    Reads chart_contexts[] from the dashboard context JSON.
+    Groups charts by their api_endpoint value.
+    Generates one Strands @tool function per unique endpoint.
+    The tool docstring lists every chart that uses that endpoint,
+    so Bedrock knows which charts each tool can answer questions about.
+    """</span>
+    ctx            = bootstrap[<span class="s">"context_json"</span>]
+    reporting_base = bootstrap[<span class="s">"reporting_base"</span>]
+    default_svc    = bootstrap[<span class="s">"servicer_number"</span>]
+
+    <span class="c"># Step 1 — group chart_contexts by api_endpoint</span>
+    endpoint_to_charts: dict[str, list] = {}
+    <span class="k">for</span> chart <span class="k">in</span> ctx[<span class="s">"chart_contexts"</span>]:
+        ep = chart[<span class="s">"api_endpoint"</span>]
+        endpoint_to_charts.setdefault(ep, []).append(chart)
+
+    <span class="c"># Step 2 — generate one tool per unique endpoint</span>
+    generated_tools = []
+
+    <span class="k">for</span> endpoint, charts <span class="k">in</span> endpoint_to_charts.items():
+        chart_names  = [c[<span class="s">"chart_title"</span>] <span class="k">for</span> c <span class="k">in</span> charts]
+        chart_fields = [f <span class="k">for</span> c <span class="k">in</span> charts <span class="k">for</span> f <span class="k">in</span> c.get(<span class="s">"key_fields"</span>, [])]
+        full_url     = <span class="s">f"{reporting_base}{endpoint}"</span>
+
+        <span class="c"># Build a descriptive docstring Bedrock uses for tool selection</span>
+        docstring = (
+            <span class="s">f"Fetches data from {endpoint}. "</span>
+            <span class="s">f"Powers these dashboard charts: {', '.join(chart_names)}. "</span>
+            <span class="s">f"Returns fields including: {', '.join(set(chart_fields))}. "</span>
+            <span class="s">f"Use this tool to answer questions about any of those charts, "</span>
+            <span class="s">f"including cross-chart comparisons between them."</span>
+        )
+
+        <span class="c"># Derive tool function name from endpoint path</span>
+        <span class="c"># e.g. /api/rejected-events/by-servicer → tool_rejected_events_by_servicer</span>
+        fn_name = <span class="s">"tool_"</span> + re.sub(<span class="s">r"[^a-z0-9]+"</span>, <span class="s">"_"</span>, endpoint.strip(<span class="s">"/"</span>).lower()).strip(<span class="s">"_"</span>)
+
+        <span class="c"># Build the tool function dynamically using a closure to capture endpoint/defaults</span>
+        <span class="k">def</span> <span class="f">make_tool</span>(ep_url, doc, svc_default):
+            <span class="p">@tool</span>
+            <span class="k">def</span> <span class="f">dynamic_tool</span>(
+                servicer_id:     str = <span class="s">""</span>,
+                activity_period: str = <span class="s">""</span>,
+                region:          str = <span class="s">""</span>
+            ):
+                params = {}
+                <span class="c"># Apply dashboard filter as default when no explicit servicer requested</span>
+                sid = servicer_id or (svc_default <span class="k">if</span> svc_default != <span class="s">"All"</span> <span class="k">else</span> <span class="s">""</span>)
+                <span class="k">if</span> sid:             params[<span class="s">"servicer_id"</span>]     = sid
+                <span class="k">if</span> activity_period: params[<span class="s">"activity_period"</span>]  = activity_period
+                <span class="k">if</span> region:          params[<span class="s">"region"</span>]          = region
+                <span class="k">return</span> httpx.get(ep_url, params=params, timeout=10).json()
+
+            dynamic_tool.__name__ = fn_name
+            dynamic_tool.__doc__  = doc
+            <span class="k">return</span> dynamic_tool
+
+        generated_tools.append(<span class="f">make_tool</span>(full_url, docstring, default_svc))
+
+    <span class="k">return</span> generated_tools
+
+
+<span class="c"># Init agent — tools come entirely from the context JSON, not hardcoded</span>
+tools = <span class="f">build_tools_from_context</span>(bootstrap)
+
+agent = Agent(
+    model=BedrockModel(
+        model_id=<span class="s">"anthropic.claude-3-5-sonnet-20241022-v2:0"</span>,
+        region_name=<span class="s">"us-east-1"</span>
+    ),
+    system_prompt=<span class="f">build_dashboard_system_prompt</span>(bootstrap),
+    tools=tools
+    <span class="c"># Bedrock sees all tools and their docstrings.</span>
+    <span class="c"># For cross-chart questions it calls multiple tools in sequence or parallel.</span>
+    <span class="c"># Adding a new chart to nlq_context.json automatically adds a new tool</span>
+    <span class="c"># on the next window open — no code change needed.</span>
+)</pre>
+    </div>
+
+    <h3 class="sub" style="margin-top:28px;">4. How the system prompt tells Bedrock about cross-chart capability</h3>
+    <p class="sub-desc">The system prompt built from context JSON explicitly tells Bedrock which tool covers which charts, enabling it to call multiple tools for comparison questions.</p>
+    <div class="code-wrap">
+      <div class="code-header"><span>System prompt — cross-chart tool mapping section (auto-generated)</span><span class="lang-tag">PROMPT</span></div>
+      <pre><span class="c"># This section is auto-generated by build_dashboard_system_prompt()</span>
+<span class="c"># from the api_endpoint grouping in the context JSON</span>
+
+TOOL CAPABILITIES — use these to answer chart and cross-chart questions:
+
+tool_api_rejected_events_by_servicer:
+  Powers: Delinquency Rate Trend, Loan Count by Region &amp; Servicer, Portfolio Balance
+  Fields: servicer_id, pct_of_total_delinquent, rejected_loans, activity_period,
+          outstanding_rejected_events, region
+  Use for: Any question about delinquency, loan counts, portfolio values,
+           regional breakdowns, or COMPARISONS BETWEEN any of the above charts.
+
+tool_api_rejected_events_summary:
+  Powers: Servicer Status Distribution, Total Loans KPI, Avg Delinquency KPI, Portfolio Balance KPI
+  Fields: outstanding_events, rejected_loans, pct_of_total_delinquent, as_of_timestamp
+  Use for: Portfolio-level totals, status breakdowns, KPI values.
+
+CROSS-CHART COMPARISONS:
+When the user asks to compare data across multiple charts, call ALL relevant tools
+and synthesise the results into a single coherent answer.
+Example: "Compare delinquency with portfolio balance" →
+  call tool_api_rejected_events_by_servicer once (returns both fields per servicer)
+Example: "Show KPI summary and break it down by servicer" →
+  call tool_api_rejected_events_summary (for KPI totals) AND
+  call tool_api_rejected_events_by_servicer (for per-servicer breakdown)</pre>
+    </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 11 — COPILOT PROMPTS -->
+  <div class="section" id="copilot-prompts">
+    <p class="section-label">Section 11</p>
+    <h2>VS Code Copilot prompts to execute</h2>
+    <p>Run these in order in VS Code Copilot Chat (<kbd>Ctrl+Shift+I</kbd>) with the relevant files open as tabs.</p>
+
+    <h3 class="sub">Prompt A — Wire the existing NLQ icon to openNlqWindow()</h3>
+    <p class="sub-desc">Binds the existing top-right icon button to the Angular handler. No new buttons needed — the icon already exists in the dashboard UI.</p>
+    <div class="prompt-block">
+      <div class="prompt-header"><span class="ph-badge">PROMPT A</span><span class="ph-title">Angular — bind existing NLQ icon to window launcher</span></div>
+      <div class="prompt-body">@workspace
+
+In the reporting dashboard Angular component, find the existing icon button group
+in the top-right of the content area (visible next to the Status KPI card in the
+running dashboard — it is a cluster of small icon buttons already in the template).
+
+Identify which button is or should be the NLQ icon and add:
+  (click)="openNlqWindow()"
+  title="Ask NLQ about this dashboard"
+  aria-label="Open NLQ assistant for this dashboard"
+
+Then add the openNlqWindow() method to the component class:
+
+openNlqWindow(): void {
+  const dashboardId = this.currentDashboardId;
+  // currentDashboardId should come from the dropdown/route:
+  // 'operations_dashboard' when "Operations Dashboard" is selected
+  // 'rejected_events' when the other dashboard view is active
+
+  const params = new URLSearchParams({
+    dashboard_id:    dashboardId,
+    analyst_name:    this.filters?.analystName    ?? 'All',
+    servicer_number: this.filters?.servicerNumber ?? 'All',
+    servicer_name:   this.filters?.servicerName   ?? 'All',
+    reporting_base:  environment.reportingEngineUrl,
+  });
+
+  const nlqUrl = `${environment.nlqEngineUrl}/nlq?${params.toString()}`;
+  const win = window.open(nlqUrl, 'fannie_nlq', 'width=860,height=740,resizable=yes');
+
+  if (!win) {
+    this.snackbar.open(
+      'Allow popups for this site to open the NLQ assistant.',
+      'Dismiss', { duration: 5000 }
+    );
+  }
+}
+
+Also add to [angular-app/src/environments/environment.ts]:
+  nlqEngineUrl: 'http://NLQ-DEV-MACHINE-IP:NLQ-PORT',
+  reportingEngineUrl: 'http://YOUR-MACHINE-IP:8000'
+
+Do NOT add NLQ buttons to individual chart cards — the single top-right icon
+is the only entry point for the NLQ assistant.
+</div>
+    </div>
+
+    <h3 class="sub">Prompt B — FastAPI: /api/nlq/context/{dashboard_id} endpoint</h3>
+    <p class="sub-desc">The Strands NLQ app fetches the full context JSON from this endpoint on window load.</p>
+    <div class="prompt-block">
+      <div class="prompt-header"><span class="ph-badge">PROMPT B</span><span class="ph-title">FastAPI — serve both dashboard context JSON files</span></div>
+      <div class="prompt-body">@workspace
+
+Add [backend/nlq_context.py] following the same APIRouter pattern as [backend/rejected_events.py].
+
+Register these routes:
+
+GET /api/nlq/context/{dashboard_id}
+  - Accepts: "operations_dashboard" or "rejected_events"
+  - Reads the matching file using pathlib.Path:
+      "operations_dashboard" → docs/nlq/operations_dashboard_nlq_context.json
+      "rejected_events"      → docs/nlq/rejected_events_nlq_context.json
+  - Returns the full parsed JSON
+  - Raises HTTPException(404) if dashboard_id is not one of the two accepted values
+  - Raises HTTPException(500) if file not found on disk (with helpful message)
+  - Tags: ["NLQ"]
+  - Add CORS header to allow cross-origin requests from the NLQ engine:
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    (the NLQ app runs on a different origin — same network but different port/IP)
+
+GET /api/nlq/context/{dashboard_id}/charts
+  - Returns only the chart_contexts[] array (lighter payload for NLQ suggestions UI)
+  - Tags: ["NLQ"]
+
+Register in [backend/main.py]:
+  from nlq_context import router as nlq_router
+  app.include_router(nlq_router)
+
+Also add a global CORS middleware to main.py so the NLQ app can call all endpoints:
+  from fastapi.middleware.cors import CORSMiddleware
+  app.add_middleware(CORSMiddleware, allow_origins=["*"],
+                     allow_methods=["GET"], allow_headers=["*"])
+
+Verify:
+  curl http://localhost:8000/api/nlq/context/operations_dashboard
+  curl http://localhost:8000/api/nlq/context/rejected_events
+  curl http://localhost:8000/api/nlq/context/operations_dashboard/charts
+</div>
+    </div>
+
+    <h3 class="sub">Prompt C — Capture and sync filter state for NLQ context</h3>
+    <p class="sub-desc">Ensures the filter state passed to the NLQ window always reflects the current sidebar and filter bar selections.</p>
+    <div class="prompt-block">
+      <div class="prompt-header"><span class="ph-badge">PROMPT C</span><span class="ph-title">Angular — filter state sync for NLQ handoff</span></div>
+      <div class="prompt-body">@workspace
+
+In the reporting dashboard component, ensure the following filter state object
+is always kept current and is what openNlqWindow() reads:
+
+this.filters = {
+  analystName:    string | 'All',   // from Analyst Name sidebar dropdown
+  servicerNumber: string | 'All',   // from Servicer Number(s) sidebar multi-select
+  servicerName:   string | 'All',   // from Servicer Name filter bar dropdown
+};
+
+Update this.filters in:
+1. ngOnInit() → set all to 'All'
+2. The Submit button handler (sidebar filters) → update analystName + servicerNumber
+3. The Apply button handler (filter bar) → update servicerName + servicerNumber
+4. The Reset button handler → reset all to 'All'
+
+Also capture the current dashboard dropdown value as this.currentDashboardId:
+  - "Operations Dashboard" selected → this.currentDashboardId = 'operations_dashboard'
+  - Update this in the dropdown (change) handler
+
+Add a visible NLQ context indicator below the filter bar showing what will be passed:
+  <div class="nlq-context-hint" *ngIf="filters.servicerNumber !== 'All'">
+    💬 NLQ will be scoped to: {{ filters.servicerNumber }} ({{ filters.servicerName }})
+  </div>
+  Style: small teal text, 11px, shown only when a non-All filter is active.
+</div>
+    </div>
+
+    <h3 class="sub">Prompt D — For the other developer: Strands bootstrap with dynamic tool generation</h3>
+    <p class="sub-desc">Give this to the other developer. They run it in their Strands NLQ app codebase. The key requirement is that tools are generated from the context JSON — not hardcoded — so adding a new chart to the dashboard automatically adds a new tool.</p>
+    <div class="prompt-block">
+      <div class="prompt-header"><span class="ph-badge">PROMPT D</span><span class="ph-title">Strands NLQ app — dynamic tool generation from context JSON api_endpoints</span></div>
+      <div class="prompt-body">@workspace
+
+Generate [nlq_dashboard_bootstrap.py] for the Strands NLQ app.
+
+The NLQ app receives a URL on load:
+  http://NLQ-HOST/nlq?dashboard_id=operations_dashboard
+                     &analyst_name=Chi+Nicholas
+                     &servicer_number=All
+                     &servicer_name=All
+                     &reporting_base=http://192.168.1.45:8000
+
+Implement these four functions:
+
+---
+
+1. bootstrap_from_url(url: str) -> dict
+   Parse URL params. Then call:
+     GET {reporting_base}/api/nlq/context/{dashboard_id}
+   to fetch the full dashboard nlq_context.json.
+   Return a dict combining URL params + full context JSON.
+
+---
+
+2. build_tools_from_context(bootstrap: dict) -> list[tool]
+   THIS IS THE CORE FUNCTION — tools are generated from context JSON, not hardcoded.
+
+   Steps:
+   a) Read all chart_contexts[] from the context JSON
+   b) Group them by api_endpoint value:
+        endpoint_to_charts = {}
+        for chart in ctx["chart_contexts"]:
+            endpoint_to_charts.setdefault(chart["api_endpoint"], []).append(chart)
+
+   c) For each unique endpoint, generate one Strands @tool function:
+      - The tool function uses httpx to call: {reporting_base}{endpoint}
+      - Accepted params: servicer_id (str), activity_period (str), region (str)
+        all optional, all passed as query params when non-empty
+      - If bootstrap["servicer_number"] is not "All", use it as default servicer_id
+      - Tool __name__ = "tool_" + endpoint path slugified
+        e.g. /api/rejected-events/by-servicer → tool_api_rejected_events_by_servicer
+      - Tool __doc__ MUST list:
+          * The endpoint path
+          * Every chart_title that uses this endpoint (from the grouped list)
+          * The key_fields available in the response
+          * Explicit note: "Use for cross-chart comparisons between [chart names]"
+        Bedrock reads the docstring to decide which tool to call for which question.
+
+   d) Return the list of generated tool functions.
+
+   Key rule: NO hardcoded endpoint strings anywhere in this function.
+   Everything comes from the context JSON. If a new chart is added to
+   nlq_context.json with a new api_endpoint, the next window.open() call
+   will automatically have a new tool — zero code change needed.
+
+---
+
+3. build_dashboard_system_prompt(bootstrap: dict) -> str
+   Build the Strands system prompt combining ALL chart_contexts[]:
+   - global_context.system_prompt_prefix as the opening
+   - Active filter state (servicer_number, servicer_name, analyst_name)
+   - TOOL CAPABILITIES section listing which tool covers which charts —
+     auto-generated from the endpoint→charts grouping (same grouping as step 2b)
+   - Combined answerable_questions[] from all charts as the scope
+   - Combined unanswerable_questions[] as guardrails
+   - CROSS-CHART COMPARISONS instruction: "When the user asks to compare data
+     across multiple charts, call ALL relevant tools and synthesise the results"
+   - Verbatim boundary response the agent MUST use for out-of-scope questions
+
+---
+
+4. is_out_of_scope(query: str, bootstrap: dict) -> bool
+   Check query against combined unanswerable_questions[] from all chart_contexts[].
+   Lowercased substring match. Return True → skip Bedrock, return boundary message.
+   Return False → proceed with agent.run(query).
+
+---
+
+Also generate [nlq_agent_init.py]:
+  from nlq_dashboard_bootstrap import *
+  bootstrap = bootstrap_from_url(current_window_url)
+  tools     = build_tools_from_context(bootstrap)
+  agent     = Agent(
+      model=BedrockModel(model_id="anthropic.claude-3-5-sonnet-20241022-v2:0",
+                         region_name="us-east-1"),
+      system_prompt=build_dashboard_system_prompt(bootstrap),
+      tools=tools
+  )
+  # tools list changes automatically based on what's in nlq_context.json
+  # no manual updates needed when charts are added or endpoints change
+
+Export: bootstrap_from_url, build_tools_from_context, build_dashboard_system_prompt,
+        is_out_of_scope, agent
+</div>
+    </div>
+
+  </div>
+
+  <div class="spacer"></div>
+  <div style="background:var(--fm-navy);color:#90AFDD;font-size:12px;padding:24px 0;text-align:center;margin:0 -32px">
+    Fannie Mae · Loan Servicing Platform · MSR17051-HT7 · NLQ Chatbot Integration Guide · DRAFT<br>
+    One dashboard-level NLQ icon · Strands Framework · AWS Bedrock · Two dashboards
+  </div>
+  <div class="spacer"></div>
+
+</div>
+</body>
+</html>
