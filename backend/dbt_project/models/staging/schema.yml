@@ -1,0 +1,24 @@
+version: 2
+models:
+  - name: stg_servicer_metrics
+    description: >
+      Cleaned view over the raw servicer_metrics seed. One row per
+      (servicer_number, business_date, region). All types are cast and
+      two derived columns are added for display convenience.
+    columns:
+      - name: servicer_number
+        description: "Business key for a servicer, e.g. SVC-001."
+      - name: servicer_name
+        description: "Human-readable servicer name."
+      - name: business_date
+        description: Reporting date (DATE, YYYY-MM-DD).
+      - name: region
+        description: "Geographic region: NORTH, SOUTH, EAST, or WEST."
+      - name: loan_count
+        description: Number of active loans on this date.
+      - name: delinquency_rate_pct
+        description: Delinquency rate as a percentage (3.2 = 3.2%). Use for display.
+      - name: balance_usd_millions
+        description: Portfolio balance in USD millions. Use for display.
+      - name: metric_status
+        description: "Risk signal: GREEN (healthy), YELLOW (watch), RED (at-risk)."

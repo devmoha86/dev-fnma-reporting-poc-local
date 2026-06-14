@@ -37,7 +37,7 @@ export interface NlqQueryResponse {
 @Injectable({ providedIn: 'root' })
 export class NlqService {
   private http = inject(HttpClient);
-  private readonly API = environment.apiUrl;
+  private readonly API = globalThis?.location ? '' : environment.apiUrl;
   private session: NlqSessionContext = {
     userName: 'Analyst',
     activeFilters: {},

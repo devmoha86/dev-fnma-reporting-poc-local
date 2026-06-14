@@ -1,0 +1,80 @@
+version: 2
+
+# schema.yml is the dbt metadata layer used for:
+#   1. Automated data-quality tests (not_null, accepted_values)
+#   2. LLM context injection for the NLQ endpoint — the model reads these
+#      descriptions to understand which table/column to query
+#   3. Future data catalogue tools (Atlan, DataHub)
+
+models:
+  - name: mart_kpi_summary
+    description: >
+      One row per (servicer_number, business_date). Powers the four KPI
+      headline cards. Filter by business_date for a snapshot.
+    columns:
+      - name: servicer_number
+        description: Business key for the servicer (e.g. SVC-001).
+        tests: [not_null]
+      - name: business_date
+        description: Reporting date (DATE).
+        tests: [not_null]
+      - name: loan_count
+        description: Total active loans on this date.
+      - name: delinquency_rate_pct
+        description: Delinquency rate as a percentage (e.g. 3.2 means 3.2%).
+      - name: balance_usd_millions
+        description: Portfolio balance in USD millions.
+      - name: metric_status
+        description: "Risk classification: GREEN, YELLOW, or RED."
+        tests:
+          - accepted_values:
+              values: ["GREEN", "YELLOW", "RED"]
+
+  - name: mart_delinquency_trend
+    description: One row per (servicer_number, business_date) for the trend line chart.
+    columns:
+      - name: servicer_number
+        tests: [not_null]
+      - name: business_date
+        tests: [not_null]
+      - name: delinquency_rate_pct
+        description: Delinquency rate percentage on this date.
+
+  - name: mart_loan_by_region
+    description: One row per (region, servicer_number, business_date). Aggregated loan counts.
+    columns:
+      - name: region
+        description: "Geographic region: NORTH, SOUTH, EAST, WEST."
+        tests: [not_null]
+      - name: servicer_number
+        tests: [not_null]
+      - name: loan_count
+        description: Total loans for this servicer in this region on this date.
+
+  - name: mart_portfolio_balance
+    description: >
+      One row per (servicer_number, business_date). Filter to MAX(business_date)
+      for the current snapshot.
+    columns:
+      - name: servicer_number
+        tests: [not_null]
+      - name: business_date
+        tests: [not_null]
+      - name: balance_usd_millions
+        description: Total portfolio balance in USD millions.
+
+  - name: mart_status_distribution
+    description: >
+      One row per (metric_status, business_date). Count of servicers per risk
+      category per day. Filter to MAX(business_date) for the donut chart.
+    columns:
+      - name: metric_status
+        description: "Risk classification: GREEN, YELLOW, or RED."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["GREEN", "YELLOW", "RED"]
+      - name: business_date
+        tests: [not_null]
+      - name: servicer_count
+        description: Number of distinct servicers with this status on this date.

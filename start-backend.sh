@@ -6,6 +6,15 @@
 
 set -e
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+
+# ── Load .env from repo root if present ──────────────────────────
+if [ -f "$REPO_ROOT/.env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$REPO_ROOT/.env"
+  set +a
+fi
+
 cd "$REPO_ROOT/backend"
 
 # ── Create virtual env if it doesn't exist ────────────────────────
@@ -32,6 +41,23 @@ echo "  URL:    http://localhost:8000"
 echo "  Docs:   http://localhost:8000/docs"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+
+if [ -z "$OPENAI_API_KEY" ]; then
+  echo "ERROR: OPENAI_API_KEY is not set."
+  echo "Create $REPO_ROOT/.env with OPENAI_API_KEY=... or export it in your shell."
+  exit 1
+fi
+
+# ── CORS origins ──────────────────────────────────────────────────
+if [ -n "$CODESPACE_NAME" ] && [ -n "$GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN" ]; then
+  FRONTEND_URL="https://${CODESPACE_NAME}-4200.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  export CORS_ALLOW_ORIGINS="http://localhost:4200,${FRONTEND_URL}"
+  echo "  CORS origins: $CORS_ALLOW_ORIGINS"
+  echo ""
+else
+  export CORS_ALLOW_ORIGINS="http://localhost:4200"
+fi
+
 echo "  In Codespaces: click 'Open in Browser' on port 8000"
 echo "  to verify: should return {\"status\":\"ok\",\"rows\":24}"
 echo ""

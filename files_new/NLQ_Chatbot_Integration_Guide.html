@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NLQ Chatbot Integration — Fannie Mae Reporting Dashboard</title>
+<style>
+  :root {
+    --fm-navy:    #1B2A4A;
+    --fm-blue:    #2557A7;
+    --fm-blue-lt: #E8F0FB;
+    --fm-teal:    #1D9E75;
+    --fm-teal-lt: #E1F5EE;
+    --fm-amber:   #BA7517;
+    --fm-amber-lt:#FAEEDA;
+    --fm-coral:   #D85A30;
+    --fm-coral-lt:#FAECE7;
+    --fm-gray:    #5F5E5A;
+    --fm-gray-lt: #F1EFE8;
+    --fm-border:  #D3D1C7;
+    --fm-bg:      #FAFAF8;
+    --fm-white:   #FFFFFF;
+    --fm-text:    #1B2A4A;
+    --fm-text-2:  #5F5E5A;
+    --font: 'Segoe UI', system-ui, sans-serif;
+    --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--fm-bg);
+    color: var(--fm-text);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--fm-navy);
+    color: #fff;
+    padding: 56px 48px 48px;
+  }
+  .hero-eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #90AFDD;
+    margin-bottom: 14px;
+  }
+  .hero h1 {
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 14px;
+    max-width: 680px;
+  }
+  .hero p {
+    color: #B8CBE8;
+    font-size: 15px;
+    max-width: 620px;
+    margin-bottom: 28px;
+  }
+  .hero-pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .hero-pill {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #D0E0F4;
+    font-weight: 500;
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 1060px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── SECTION HEADERS ── */
+  .section {
+    padding: 56px 0 0;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--fm-blue);
+    margin-bottom: 10px;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--fm-navy);
+    margin-bottom: 8px;
+  }
+  .section > p {
+    color: var(--fm-text-2);
+    max-width: 700px;
+    margin-bottom: 32px;
+  }
+
+  /* ── STEP CARDS ── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 0 24px;
+    padding-bottom: 36px;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 48px;
+    bottom: 0;
+    width: 2px;
+    background: var(--fm-border);
+  }
+  .step-num {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--fm-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-body {}
+  .step-body h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--fm-navy);
+    margin-bottom: 6px;
+    padding-top: 14px;
+  }
+  .step-body p {
+    color: var(--fm-text-2);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .card h4 { font-size: 14px; font-weight: 600; color: var(--fm-navy); margin-bottom: 6px; }
+  .card p  { font-size: 13px; color: var(--fm-text-2); line-height: 1.55; }
+
+  /* ── CHART METADATA TABLE ── */
+  .meta-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 32px; }
+  .meta-table thead th {
+    background: var(--fm-navy);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: .04em;
+  }
+  .meta-table thead th:first-child { border-radius: 8px 0 0 0; }
+  .meta-table thead th:last-child  { border-radius: 0 8px 0 0; }
+  .meta-table tbody tr:nth-child(odd) { background: var(--fm-gray-lt); }
+  .meta-table tbody tr:nth-child(even) { background: var(--fm-white); }
+  .meta-table tbody td { padding: 9px 14px; border-bottom: 1px solid var(--fm-border); vertical-align: top; line-height: 1.5; }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-line    { background: #E8F0FB; color: #2557A7; }
+  .tag-bar     { background: var(--fm-teal-lt); color: var(--fm-teal); }
+  .tag-donut   { background: var(--fm-amber-lt); color: var(--fm-amber); }
+  .tag-kpi     { background: var(--fm-coral-lt); color: var(--fm-coral); }
+  .tag-hbar    { background: #F3E8FB; color: #6B3FAA; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-wrap {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+  }
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    min-width: 760px;
+  }
+  .flow-node {
+    flex-shrink: 0;
+    width: 140px;
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .flow-node .fn-icon { font-size: 22px; margin-bottom: 6px; }
+  .flow-node .fn-title { font-size: 12px; font-weight: 600; line-height: 1.35; }
+  .flow-node .fn-sub   { font-size: 11px; margin-top: 3px; line-height: 1.3; opacity: .8; }
+  .flow-arrow {
+    flex-shrink: 0;
+    width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .flow-arrow svg { display: block; }
+  .flow-arrow span { font-size: 10px; color: var(--fm-text-2); text-align: center; line-height: 1.2; }
+  .fn-user    { background: var(--fm-blue-lt);  color: var(--fm-blue);  }
+  .fn-ui      { background: var(--fm-teal-lt);  color: #0F6E56; }
+  .fn-context { background: var(--fm-amber-lt); color: var(--fm-amber); }
+  .fn-nlq     { background: var(--fm-coral-lt); color: #7A2D10; }
+  .fn-api     { background: #F3E8FB;            color: #6B3FAA; }
+  .fn-data    { background: var(--fm-gray-lt);  color: var(--fm-gray);  }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrap {
+    background: #0F172A;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0 24px;
+    font-size: 13px;
+  }
+  .code-header {
+    background: #1E293B;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #94A3B8;
+  }
+  .code-header .lang-tag {
+    background: var(--fm-blue);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+  }
+  pre {
+    margin: 0;
+    padding: 20px 20px;
+    overflow-x: auto;
+    color: #E2E8F0;
+    font-family: var(--mono);
+    line-height: 1.7;
+    font-size: 13px;
+  }
+  .k { color: #93C5FD; }  /* keyword */
+  .s { color: #86EFAC; }  /* string  */
+  .c { color: #64748B; }  /* comment */
+  .f { color: #FDE68A; }  /* function */
+  .t { color: #F0ABFC; }  /* type    */
+  .n { color: #E2E8F0; }  /* normal  */
+  .p { color: #FDA4AF; }  /* prop    */
+
+  /* ── PROMPT BLOCKS ── */
+  .prompt-block {
+    background: var(--fm-navy);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0 28px;
+  }
+  .prompt-header {
+    background: var(--fm-blue);
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .prompt-header .ph-badge {
+    background: rgba(255,255,255,.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .06em;
+  }
+  .prompt-header .ph-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .prompt-body {
+    padding: 18px 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: #CBD5E1;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-left: 3px solid var(--fm-blue);
+    background: var(--fm-blue-lt);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: #1B2A4A;
+    margin: 16px 0 24px;
+  }
+  .callout.warn  { border-color: var(--fm-amber); background: var(--fm-amber-lt); color: #3B2200; }
+  .callout.tip   { border-color: var(--fm-teal);  background: var(--fm-teal-lt);  color: #04342C; }
+
+  /* ── DASHBOARD MOCKUP ── */
+  .dash-mockup {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .dash-topbar {
+    background: var(--fm-navy);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .dash-topbar span { color: #90AFDD; font-size: 13px; }
+  .dash-topbar strong { color: #fff; font-size: 13px; }
+  .dash-body { display: flex; }
+  .dash-sidebar {
+    width: 200px;
+    border-right: 1px solid var(--fm-border);
+    padding: 16px;
+    flex-shrink: 0;
+  }
+  .dash-sidebar .sn { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--fm-text-2); margin: 14px 0 6px; }
+  .dash-sidebar .si {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--fm-text-2);
+    cursor: pointer;
+  }
+  .dash-sidebar .si.active { background: var(--fm-blue-lt); color: var(--fm-blue); font-weight: 500; }
+  .dash-content { flex: 1; padding: 20px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .kpi-card {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+  }
+  .kpi-card .kv { font-size: 22px; font-weight: 600; color: var(--fm-navy); }
+  .kpi-card .kl { font-size: 11px; color: var(--fm-text-2); margin-top: 3px; }
+  .kpi-card .nlq-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--fm-blue);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity .15s;
+  }
+  .kpi-card:hover .nlq-btn { opacity: 1; }
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .chart-card {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 8px;
+    padding: 14px;
+    position: relative;
+  }
+  .chart-card .ct { font-size: 11px; font-weight: 600; color: var(--fm-navy); margin-bottom: 8px; }
+  .chart-placeholder {
+    background: var(--fm-gray-lt);
+    border-radius: 6px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--fm-text-2);
+  }
+  .chart-card .nlq-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    background: var(--fm-blue);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity .15s;
+    font-family: var(--font);
+    font-weight: 600;
+  }
+  .chart-card:hover .nlq-btn { opacity: 1; }
+
+  /* ── NLQ PANEL MOCKUP ── */
+  .nlq-panel-demo {
+    position: relative;
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+  .nlq-panel-header {
+    background: var(--fm-blue);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nlq-panel-header .nh-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .nlq-panel-header .nh-close {
+    color: rgba(255,255,255,.7);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .nlq-chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 16px 0; }
+  .nlq-chip {
+    background: var(--fm-blue-lt);
+    border: 1px solid #B5D4F4;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--fm-blue);
+    cursor: pointer;
+  }
+  .nlq-messages { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .nlq-msg { max-width: 85%; }
+  .nlq-msg.user { align-self: flex-end; }
+  .nlq-msg.bot  { align-self: flex-start; }
+  .nlq-msg .mb {
+    padding: 9px 13px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .nlq-msg.user .mb { background: var(--fm-blue); color: #fff; border-radius: 10px 10px 2px 10px; }
+  .nlq-msg.bot  .mb { background: var(--fm-gray-lt); color: var(--fm-text); border-radius: 10px 10px 10px 2px; }
+  .nlq-input-row {
+    padding: 12px 16px;
+    border-top: 1px solid var(--fm-border);
+    display: flex;
+    gap: 8px;
+  }
+  .nlq-input {
+    flex: 1;
+    border: 1px solid var(--fm-border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--fm-text);
+    font-family: var(--font);
+  }
+  .nlq-send {
+    background: var(--fm-blue);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ── CONTEXT JSON PREVIEW ── */
+  .json-preview {
+    background: #0F172A;
+    border-radius: 10px;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #94A3B8;
+    overflow-x: auto;
+    margin: 16px 0 28px;
+  }
+  .jk { color: #93C5FD; }
+  .jv { color: #86EFAC; }
+  .jn { color: #FDA4AF; }
+  .jb { color: #F0ABFC; }
+  .js { color: #FDE68A; }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-section {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--fm-white);
+    border: 1px solid var(--fm-border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 32px 0;
+  }
+  .toc h3 { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fm-text-2); margin-bottom: 12px; }
+  .toc ol { padding-left: 18px; }
+  .toc li { font-size: 14px; padding: 4px 0; }
+  .toc a  { color: var(--fm-blue); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ── SPACER ── */
+  .spacer { height: 56px; }
+  .divider { border: none; border-top: 1px solid var(--fm-border); margin: 48px 0; }
+
+  @media (max-width: 720px) {
+    .hero { padding: 36px 24px; }
+    .page { padding: 0 20px; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="page">
+    <p class="hero-eyebrow">Fannie Mae · Loan Servicing Platform · MSR17051-HT7</p>
+    <h1>NLQ Chatbot — Reporting Dashboard Integration Guide</h1>
+    <p>Architecture, user flow, chart metadata, and VS Code Copilot prompts to build a context-aware chat assistant that understands your running dashboard.</p>
+    <div class="hero-pills">
+      <span class="hero-pill">Angular 18</span>
+      <span class="hero-pill">FastAPI / Python 3.11</span>
+      <span class="hero-pill">chart_nlq_context.json</span>
+      <span class="hero-pill">metadata.json</span>
+      <span class="hero-pill">VS Code Copilot</span>
+      <span class="hero-pill">Docker local dev</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#overview">What we are building</a></li>
+      <li><a href="#architecture">Architecture overview</a></li>
+      <li><a href="#userflow">User flow — icon click to answer</a></li>
+      <li><a href="#chartmeta">Chart metadata — what each component holds</a></li>
+      <li><a href="#contextfiles">The two context files</a></li>
+      <li><a href="#dashboard-mockup">Dashboard mockup with NLQ buttons</a></li>
+      <li><a href="#nlq-panel">NLQ chat panel mockup</a></li>
+      <li><a href="#copilot-prompts">VS Code Copilot prompts to execute</a></li>
+      <li><a href="#suggestions">Smart suggestion engine</a></li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 — OVERVIEW -->
+  <div class="section" id="overview">
+    <p class="section-label">Section 1</p>
+    <h2>What we are building</h2>
+    <p>A context-aware NLQ chatbot panel that slides in when the user clicks the chat icon on any chart or KPI card. It already knows what that chart shows, what data feeds it, and what questions are answerable — before the user types a word.</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon" style="background:#E8F0FB;">💬</div>
+        <h4>Icon-triggered chat panel</h4>
+        <p>Each chart card and KPI card has an NLQ icon button. Clicking it opens a slide-in chat panel scoped to that specific chart's data and API endpoint.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#E1F5EE;">📋</div>
+        <h4>Session + dashboard context</h4>
+        <p>The panel receives the logged-in user's session (analyst name, servicer filter state) and the chart's metadata — title, chart type, fields, API source — as context on every message.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#FAEEDA;">📡</div>
+        <h4>Live data awareness</h4>
+        <p>The NLQ backend knows what each chart is rendering via <code>chart_nlq_context.json</code> and can call the same FastAPI endpoints to answer questions with current data.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#FAECE7;">✨</div>
+        <h4>Smart suggestions</h4>
+        <p>Suggested prompts seeded from context — "show as table", "add loan balance column", "filter to SVC-001" — make first interactions instant and discoverable.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 2 — ARCHITECTURE -->
+  <div class="section" id="architecture">
+    <p class="section-label">Section 2</p>
+    <h2>Architecture overview</h2>
+    <p>Three runtime layers interact when the user clicks the NLQ icon. The Angular frontend holds session state and chart context. The NLQ backend (other developer's local) handles intent and query building. Your FastAPI backend provides the data.</p>
+
+    <div class="flow-wrap">
+      <div class="flow">
+        <div class="flow-node fn-user">
+          <div class="fn-icon">👤</div>
+          <div class="fn-title">User</div>
+          <div class="fn-sub">Analyst / Servicer on dashboard</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="2" y1="8" x2="34" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a2)"/><defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>clicks icon</span>
+        </div>
+        <div class="flow-node fn-ui">
+          <div class="fn-icon">🖥</div>
+          <div class="fn-title">Angular MFE</div>
+          <div class="fn-sub">loads chart context + session</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="2" y1="8" x2="34" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a3)"/><defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>query + context</span>
+        </div>
+        <div class="flow-node fn-nlq">
+          <div class="fn-icon">🧠</div>
+          <div class="fn-title">NLQ Backend</div>
+          <div class="fn-sub">intent → API call builder</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="2" y1="8" x2="34" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a4)"/><defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>GET /api/...</span>
+        </div>
+        <div class="flow-node fn-api">
+          <div class="fn-icon">⚙️</div>
+          <div class="fn-title">FastAPI Backend</div>
+          <div class="fn-sub">rejected_events.py + Pandas</div>
+        </div>
+        <div class="flow-arrow">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="2" y1="8" x2="34" y2="8" stroke="#1B2A4A" stroke-width="1.5" marker-end="url(#a5)"/><defs><marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1B2A4A" stroke-width="1.5"/></marker></defs></svg>
+          <span>JSON rows</span>
+        </div>
+        <div class="flow-node fn-data">
+          <div class="fn-icon">🗄</div>
+          <div class="fn-title">CSV / Aurora</div>
+          <div class="fn-sub">rejected_events.csv servicer_metrics.csv</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Local-to-local setup:</strong> Your Docker runs on port 8000. The NLQ backend runs on the other dev's machine. Angular on port 4200 calls both. Network: same office WiFi/VPN. Replace <code>localhost</code> with your machine IP for the NLQ dev.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 3 — USER FLOW -->
+  <div class="section" id="userflow">
+    <p class="section-label">Section 3</p>
+    <h2>User flow — icon click to answer</h2>
+    <p>Eight steps from the user clicking the chat icon to seeing a contextualized answer in the panel.</p>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>User hovers a chart card — NLQ icon appears</h3>
+          <p>The chat icon button (<code>💬</code>) is hidden by default and appears on <code>:hover</code> of the chart card. Each button carries a <code>data-chart-id</code> attribute matching the <code>chart_id</code> in <code>chart_nlq_context.json</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Click fires <code>openNlqChat(chartId)</code> in Angular component</h3>
+          <p>The Angular dashboard component calls <code>NlqService.getChartContext(chartId)</code>. The service has already loaded <code>chart_nlq_context.json</code> from <code>src/assets/nlq/</code> at app startup — this is a synchronous local lookup, no network call needed at click time.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Angular reads current session + filter state</h3>
+          <p>The component captures: <strong>logged-in user</strong> (Chi Nicholas), <strong>active dashboard filters</strong> (Servicer Number = All, Servicer Name = All), and the <strong>current chart render state</strong> (which servicers are visible, current date range). These are bundled into the context payload.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>NLQ chat panel slides in with pre-seeded suggestions</h3>
+          <p>The panel opens showing the chart title, a scoped header ("Asking about: Delinquency Rate Trend"), and 3–4 suggestion chips drawn from <code>chart_nlq_context.json → suggested_followups[]</code>. User can tap a chip or type freely.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h3>User submits a question — Angular posts to NLQ backend</h3>
+          <p>The Angular service POSTs to the NLQ backend (<code>POST /api/nlq/query</code>) with: the user's text, the <code>chart_id</code>, the <code>system_prompt_context</code> from the JSON, and the active filter state. The NLQ backend uses <code>system_prompt_context</code> as a system message prefix so its LLM stays scoped to the chart's data.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <h3>NLQ backend resolves intent → constructs FastAPI call</h3>
+          <p>Using <code>metadata.json</code> (nlq_alias → field mapping) and <code>openapi.json</code> (param names), the NLQ backend builds the correct GET URL: e.g. <code>GET /api/rejected-events/by-servicer?servicer_id=SVC-001&activity_period=2026-Q1</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <h3>FastAPI returns JSON — NLQ formats the answer</h3>
+          <p>Your <code>rejected_events.py</code> runs <code>apply_filters()</code> + Pandas <code>groupby("servicer_id")</code> and returns a JSON array. The NLQ backend formats this as a natural-language answer, optionally with a rendered table or chart suggestion.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <h3>Answer renders in the NLQ panel with follow-up suggestions</h3>
+          <p>The chat panel shows the answer alongside smart follow-up options: "Show as table", "Add loan balance column" (if available in API), "Filter to this servicer only", "Export CSV".</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 4 — CHART METADATA -->
+  <div class="section" id="chartmeta">
+    <p class="section-label">Section 4</p>
+    <h2>Chart metadata — what each component holds</h2>
+    <p>Confirmed from the running dashboard image. These values populate both <code>metadata.json → dashboard_charts[]</code> and <code>chart_nlq_context.json → chart_contexts[]</code>.</p>
+
+    <table class="meta-table">
+      <thead>
+        <tr>
+          <th>chart_id</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>X / Y / Group</th>
+          <th>API Endpoint</th>
+          <th>Key Fields Visible</th>
+          <th>NLQ Filterable By</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>delinquency_rate_trend</code></td>
+          <td>Delinquency Rate Trend (%)</td>
+          <td><span class="tag tag-line">line</span></td>
+          <td>X: timestamp<br>Y: rate (%)<br>Group: servicer_id</td>
+          <td><code>/api/rejected-events/by-servicer</code></td>
+          <td>SVC-001 Apex, SVC-002 Beacon, SVC-003 Cardinal, SVC-004 Delta, SVC-005 Evergreen, SVC-006 Forks, SVC-007 Granite, SVC-008 Horizon</td>
+          <td>servicer_id, activity_period</td>
+        </tr>
+        <tr>
+          <td><code>loan_count_region_servicer</code></td>
+          <td>Loan Count by Region &amp; Servicer</td>
+          <td><span class="tag tag-bar">grouped bar</span></td>
+          <td>X: region<br>Y: loan_count<br>Group: servicer_id</td>
+          <td><code>/api/rejected-events/by-servicer</code></td>
+          <td>NORTH, SOUTH, EAST, WEST regions; all 8 servicers</td>
+          <td>region, servicer_id</td>
+        </tr>
+        <tr>
+          <td><code>portfolio_balance</code></td>
+          <td>Portfolio Balance — USD Millions</td>
+          <td><span class="tag tag-hbar">horiz. bar</span></td>
+          <td>X: balance_usd_m<br>Y: servicer_id</td>
+          <td><code>/api/rejected-events/by-servicer</code></td>
+          <td>Per-servicer balances; total $1,525M as of 2026-04-03</td>
+          <td>servicer_id, as_of_date</td>
+        </tr>
+        <tr>
+          <td><code>servicer_status_dist</code></td>
+          <td>Servicer Status Distribution</td>
+          <td><span class="tag tag-donut">donut</span></td>
+          <td>Group: status<br>Value: count / %</td>
+          <td><code>/api/rejected-events/summary</code></td>
+          <td>Status segments visible as of 2026-04-03</td>
+          <td>status, as_of_date</td>
+        </tr>
+        <tr>
+          <td><code>kpi_total_loans</code></td>
+          <td>Total Loans</td>
+          <td><span class="tag tag-kpi">KPI card</span></td>
+          <td>Value: 10,756</td>
+          <td><code>/api/rejected-events/summary</code></td>
+          <td>outstanding_rejected_events, rejected_loans</td>
+          <td>activity_period, servicer_id</td>
+        </tr>
+        <tr>
+          <td><code>kpi_avg_delinquency</code></td>
+          <td>Avg Delinquency</td>
+          <td><span class="tag tag-kpi">KPI card</span></td>
+          <td>Value: 3.6%</td>
+          <td><code>/api/rejected-events/summary</code></td>
+          <td>pct_of_total_delinquent</td>
+          <td>activity_period, servicer_id</td>
+        </tr>
+        <tr>
+          <td><code>kpi_portfolio_balance</code></td>
+          <td>Portfolio Balance</td>
+          <td><span class="tag tag-kpi">KPI card</span></td>
+          <td>Value: $1,525M</td>
+          <td><code>/api/rejected-events/summary</code></td>
+          <td>portfolio_balance_usd_millions</td>
+          <td>activity_period, servicer_id</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 5 — CONTEXT FILES -->
+  <div class="section" id="contextfiles">
+    <p class="section-label">Section 5</p>
+    <h2>The two context files the NLQ panel reads</h2>
+    <p>These two JSON files are the contract between your Angular app and the NLQ backend. Both are generated by Copilot prompts and committed to the repo.</p>
+
+    <div class="cards" style="margin-bottom:28px;">
+      <div class="card">
+        <div class="card-icon" style="background:#E8F0FB; color:#2557A7; font-weight:700; font-size:14px;">M</div>
+        <h4>metadata.json</h4>
+        <p><strong>Answers: "what can a user ask?"</strong><br>Contains data sources, column nlq_aliases, filterable/aggregatable flags, dashboard_charts[] registry, kpi_cards[], computed_fields[].</p>
+        <p style="margin-top:8px; font-size:12px; color:#2557A7;">📁 <code>docs/nlq/metadata.json</code></p>
+      </div>
+      <div class="card">
+        <div class="card-icon" style="background:#E1F5EE; color:#0F6E56; font-weight:700; font-size:14px;">C</div>
+        <h4>chart_nlq_context.json</h4>
+        <p><strong>Answers: "what is this chart showing right now?"</strong><br>Contains per-chart system_prompt_context, answerable questions, unanswerable questions, and suggested_followups loaded on icon click.</p>
+        <p style="margin-top:8px; font-size:12px; color:#0F6E56;">📁 <code>docs/nlq/chart_nlq_context.json</code><br>📁 <code>angular-app/src/assets/nlq/chart_nlq_context.json</code></p>
+      </div>
+    </div>
+
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:12px;">Sample <code>chart_nlq_context.json</code> entry for the Delinquency Rate Trend chart:</p>
+    <div class="json-preview"><span class="jk">{</span>
+  <span class="jk">"chart_id"</span>: <span class="jv">"delinquency_rate_trend"</span>,
+  <span class="jk">"chart_title"</span>: <span class="jv">"Delinquency Rate Trend (%)"</span>,
+  <span class="jk">"chart_type"</span>: <span class="jv">"line"</span>,
+  <span class="jk">"system_prompt_context"</span>: <span class="jv">"This chart shows the percentage delinquency rate over time for each of the 8 active servicers (SVC-001 through SVC-008). Data comes from /api/rejected-events/by-servicer. You can filter by servicer_id or activity_period. Computed field: pct_of_total_delinquent = outstanding_loans / total_loans."</span>,
+  <span class="jk">"answerable_questions"</span>: <span class="jb">[</span>
+    <span class="jv">"Which servicer has the highest delinquency rate?"</span>,
+    <span class="jv">"Show delinquency trend for SVC-003 only"</span>,
+    <span class="jv">"What is the average delinquency rate across all servicers?"</span>,
+    <span class="jv">"Show this data as a table"</span>
+  <span class="jb">]</span>,
+  <span class="jk">"unanswerable_questions"</span>: <span class="jb">[</span>
+    <span class="jv">"What caused the spike on Apr 1? (no root cause data in API)"</span>
+  <span class="jb">]</span>,
+  <span class="jk">"active_filters"</span>: <span class="jb">[</span><span class="jv">"servicer number"</span>, <span class="jv">"servicer name"</span><span class="jb">]</span>,
+  <span class="jk">"suggested_followups"</span>: <span class="jb">[</span>
+    <span class="jv">"Show as table with servicer name and rate columns"</span>,
+    <span class="jv">"Which servicer improved most last quarter?"</span>,
+    <span class="jv">"Add loan count column to this view"</span>,
+    <span class="jv">"Filter to just NORTH region servicers"</span>
+  <span class="jb">]</span>
+<span class="jk">}</span></div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 6 — DASHBOARD MOCKUP -->
+  <div class="section" id="dashboard-mockup">
+    <p class="section-label">Section 6</p>
+    <h2>Dashboard mockup — NLQ icon placement</h2>
+    <p>Hover over any chart card or KPI card below to see the NLQ icon appear. This matches the interaction pattern to implement in Angular.</p>
+
+    <div class="dash-mockup">
+      <div class="dash-topbar">
+        <span>Fannie Mae</span>
+        <strong>Loan Management — Servicing</strong>
+      </div>
+      <div class="dash-body">
+        <div class="dash-sidebar">
+          <div class="sn">Dashboard</div>
+          <div class="si">Business Process Observability</div>
+          <div class="sn">Services</div>
+          <div class="si">Servicer Cash Position</div>
+          <div class="si">Loan Position</div>
+          <div class="si">Loan Escrow</div>
+          <div class="si active">Reporting</div>
+          <div class="sn">Support</div>
+          <div class="si">Training and Dev</div>
+          <div class="si">Help</div>
+        </div>
+        <div class="dash-content">
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kv">10,756</div>
+              <div class="kl">Total Loans</div>
+              <button class="nlq-btn" title="Ask about Total Loans">💬</button>
+            </div>
+            <div class="kpi-card">
+              <div class="kv">3.6%</div>
+              <div class="kl">Avg Delinquency</div>
+              <button class="nlq-btn" title="Ask about Avg Delinquency">💬</button>
+            </div>
+            <div class="kpi-card">
+              <div class="kv">$1,525M</div>
+              <div class="kl">Portfolio Balance</div>
+              <button class="nlq-btn" title="Ask about Portfolio Balance">💬</button>
+            </div>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="ct">DELINQUENCY RATE TREND (%)</div>
+              <div class="chart-placeholder">📈 Multi-line by servicer · Apr 2026</div>
+              <button class="nlq-btn" title="Ask about this chart">💬</button>
+            </div>
+            <div class="chart-card">
+              <div class="ct">LOAN COUNT BY REGION &amp; SERVICER</div>
+              <div class="chart-placeholder">📊 Grouped bar · NORTH / SOUTH / EAST / WEST</div>
+              <button class="nlq-btn" title="Ask about this chart">💬</button>
+            </div>
+            <div class="chart-card">
+              <div class="ct">PORTFOLIO BALANCE — USD MILLIONS</div>
+              <div class="chart-placeholder">📉 Horizontal bar · 8 servicers · as of 2026-04-03</div>
+              <button class="nlq-btn" title="Ask about this chart">💬</button>
+            </div>
+            <div class="chart-card">
+              <div class="ct">SERVICER STATUS DISTRIBUTION</div>
+              <div class="chart-placeholder">🍩 Donut · as of 2026-04-03</div>
+              <button class="nlq-btn" title="Ask about this chart">💬</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Angular implementation:</strong> Add <code>(mouseenter)</code> and <code>(mouseleave)</code> on each <code>.chart-card</code> to toggle <code>showNlqBtn</code> flag, or use pure CSS <code>opacity: 0 / :hover opacity: 1</code> on the button. The <code>data-chart-id</code> attribute on each card drives <code>openNlqChat()</code>.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 7 — NLQ PANEL MOCKUP -->
+  <div class="section" id="nlq-panel">
+    <p class="section-label">Section 7</p>
+    <h2>NLQ chat panel mockup</h2>
+    <p>The slide-in panel that appears when the user clicks the NLQ icon on the Delinquency Rate Trend chart. Suggestions are seeded from <code>chart_nlq_context.json</code>.</p>
+
+    <div class="nlq-panel-demo" style="max-width:420px;">
+      <div class="nlq-panel-header">
+        <span class="nh-title">💬 Asking about: Delinquency Rate Trend (%)</span>
+        <span class="nh-close">✕</span>
+      </div>
+      <div class="nlq-chips">
+        <span class="nlq-chip">Show as table</span>
+        <span class="nlq-chip">Which servicer is highest?</span>
+        <span class="nlq-chip">Add loan count column</span>
+        <span class="nlq-chip">Filter to SVC-001</span>
+      </div>
+      <div class="nlq-messages">
+        <div class="nlq-msg user">
+          <div class="mb">Which servicer has the highest delinquency rate?</div>
+        </div>
+        <div class="nlq-msg bot">
+          <div class="mb">Based on the current data, <strong>SVC-007 Granite Mortgage Co</strong> has the highest delinquency rate at <strong>4.8%</strong> as of Apr 2026. SVC-003 Cardinal Servicing Group follows at 4.2%.<br><br>Would you like to see this as a table, or filter to Granite only?</div>
+        </div>
+        <div class="nlq-msg user">
+          <div class="mb">Show as table with loan count column</div>
+        </div>
+        <div class="nlq-msg bot">
+          <div class="mb">I can show the data in tabular format. The <code>rejected_loans</code> field is available from <code>/api/rejected-events/by-servicer</code> — it is not currently displayed in this chart but I can add it. Switching to table view now...</div>
+        </div>
+      </div>
+      <div class="nlq-input-row">
+        <input class="nlq-input" type="text" placeholder="Ask about this chart..." value=""/>
+        <button class="nlq-send">Send</button>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Suggestion chips</strong> come from <code>suggested_followups[]</code> in <code>chart_nlq_context.json</code>. The "Add loan count column" chip is smart — the NLQ backend knows this field exists in the API (<code>rejected_loans</code>) but is not in the current chart render, so it proactively offers to add it.
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 8 — COPILOT PROMPTS -->
+  <div class="section" id="copilot-prompts">
+    <p class="section-label">Section 8</p>
+    <h2>VS Code Copilot prompts to execute</h2>
+    <p>Run these in order in VS Code Copilot Chat (<kbd>Ctrl+Shift+I</kbd>). Each prompt builds on the previous output. Open the files listed in the workspace setup section as tabs before starting.</p>
+
+    <!-- PROMPT A -->
+    <h3 style="font-size:16px; margin:28px 0 6px; color:var(--fm-navy);">Prompt A — Generate the Angular NlqService</h3>
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:4px;">Creates the Angular service that loads chart context, manages session state, and communicates with the NLQ backend.</p>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="ph-badge">PROMPT A</span>
+        <span class="ph-title">NlqService — Angular 18</span>
+      </div>
+      <div class="prompt-body">@workspace
+
+Generate a complete Angular 18 service at [angular-app/src/app/services/nlq.service.ts].
+
+The service must:
+
+1. Load [angular-app/src/assets/nlq/chart_nlq_context.json] once on init via HttpClient,
+   cache it with shareReplay(1), and expose getChartContext(chartId: string) returning
+   the matching ChartNlqContext object.
+
+2. Capture current dashboard session state via a setSessionContext() method that accepts:
+   - userName: string (e.g. "Chi Nicholas")
+   - activeFilters: { servicer_number: string, servicer_name: string }
+
+3. Expose sendNlqQuery(payload: NlqQueryPayload): Observable<NlqResponse> that POSTs to:
+   http://<NLQ_BASE_URL>/api/nlq/query
+
+   The NlqQueryPayload type must include:
+   - chart_id: string
+   - user_query: string
+   - session: { userName, activeFilters }
+   - chart_context: { system_prompt_context, api_endpoint, filters_supported, answerable_questions }
+   - active_filters: { servicer_number, servicer_name }
+
+4. Expose loadChartSuggestions(chartId: string): Observable<string[]> returning the
+   suggested_followups[] array from the cached context for that chart_id.
+
+Use environment variable NLQ_BASE_URL from [angular-app/src/environments/environment.ts].
+Add proper error handling with catchError returning an empty NlqResponse on failure.
+Export all interfaces (ChartNlqContext, NlqQueryPayload, NlqResponse).
+</div>
+    </div>
+
+    <!-- PROMPT B -->
+    <h3 style="font-size:16px; margin:28px 0 6px; color:var(--fm-navy);">Prompt B — Add NLQ icon button to chart cards</h3>
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:4px;">Updates the reporting dashboard Angular template to add the NLQ icon button to each chart card and each KPI card.</p>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="ph-badge">PROMPT B</span>
+        <span class="ph-title">Dashboard template — NLQ button injection</span>
+      </div>
+      <div class="prompt-body">@workspace
+
+Look at the reporting dashboard Angular component template.
+It is likely at [angular-app/src/app/components/reporting-dashboard/]
+or similar — find it by searching for "Plotly" usage in the templates.
+
+For each chart card div and each KPI card div, add:
+
+1. A data attribute: [attr.data-chart-id]="'delinquency_rate_trend'" (use the correct
+   chart_id from the confirmed list below for each card)
+
+2. An NLQ icon button inside the card:
+   <button class="nlq-icon-btn"
+           (click)="openNlqChat($event, 'CHART_ID_HERE')"
+           title="Ask a question about this chart"
+           aria-label="Open NLQ assistant for CHART_TITLE_HERE">
+     💬
+   </button>
+
+3. Add the SCSS class .nlq-icon-btn to the component stylesheet:
+   .nlq-icon-btn {
+     position: absolute; top: 10px; right: 10px;
+     opacity: 0; transition: opacity 0.15s ease;
+     background: #2557A7; color: #fff; border: none;
+     border-radius: 7px; width: 28px; height: 28px;
+     cursor: pointer; font-size: 13px;
+     display: flex; align-items: center; justify-content: center;
+   }
+   .chart-card:hover .nlq-icon-btn,
+   .kpi-card:hover .nlq-icon-btn { opacity: 1; }
+
+Confirmed chart_id values to use:
+- Delinquency Rate Trend chart    → delinquency_rate_trend
+- Loan Count by Region chart      → loan_count_region_servicer
+- Portfolio Balance chart         → portfolio_balance
+- Servicer Status Distribution    → servicer_status_dist
+- Total Loans KPI card            → kpi_total_loans
+- Avg Delinquency KPI card        → kpi_avg_delinquency
+- Portfolio Balance KPI card      → kpi_portfolio_balance
+
+Also add openNlqChat($event: MouseEvent, chartId: string): void to the component class.
+It must: call $event.stopPropagation(), then call nlqService.getChartContext(chartId)
+and set this.activeChartId = chartId and this.nlqPanelOpen = true.
+</div>
+    </div>
+
+    <!-- PROMPT C -->
+    <h3 style="font-size:16px; margin:28px 0 6px; color:var(--fm-navy);">Prompt C — Generate the NLQ chat panel component</h3>
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:4px;">Creates the slide-in chat panel as a standalone Angular component with suggestion chips, message history, and input.</p>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="ph-badge">PROMPT C</span>
+        <span class="ph-title">NlqChatPanelComponent — Angular 18</span>
+      </div>
+      <div class="prompt-body">@workspace
+
+Generate a standalone Angular 18 component at:
+[angular-app/src/app/components/nlq-chat-panel/nlq-chat-panel.component.ts]
+
+Component requirements:
+
+@Input() chartId: string — the chart_id passed from the dashboard
+@Input() isOpen: boolean — controls panel visibility
+@Output() closed = new EventEmitter<void>()
+
+The component must on chartId change:
+1. Call NlqService.getChartContext(chartId) and store as activeContext
+2. Load suggestion chips from activeContext.suggested_followups[]
+3. Reset chatHistory to []
+
+Template structure (include inline styles, no external CSS dependency):
+- Panel header: shows "Asking about: {activeContext.chart_title}" + close button
+- Suggestion chips row: ngFor over activeContext.suggested_followups,
+  clicking a chip calls submitQuery(chip)
+- Chat history: ngFor over chatHistory[], each message has role (user|bot) and content
+  User messages right-aligned with blue background
+  Bot messages left-aligned with gray background
+- Smart suggestion footer: after each bot response, show inline action buttons:
+  "Show as table" | "Export CSV" | "Filter to this servicer"
+  These call submitQuery() with the appropriate pre-built phrase
+- Input row: text input bound to userInput, Enter key and Send button call submitQuery()
+
+submitQuery(text: string): void must:
+1. Add { role: 'user', content: text } to chatHistory
+2. Call NlqService.sendNlqQuery() with the full payload including session context
+3. Add { role: 'bot', content: response.answer } to chatHistory
+4. Show a loading indicator while awaiting
+
+Also add an "unanswerable" guard: if the user's question matches any phrase in
+activeContext.unanswerable_questions[], show a bot message explaining why this
+data is not available, without calling the NLQ backend.
+
+Add slide-in animation using Angular @trigger transition: translateX(100%) → translateX(0).
+</div>
+    </div>
+
+    <!-- PROMPT D -->
+    <h3 style="font-size:16px; margin:28px 0 6px; color:var(--fm-navy);">Prompt D — Generate chart_nlq_context.json</h3>
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:4px;">Uses all prior context to generate the full chart context file the Angular app serves as a static asset.</p>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="ph-badge">PROMPT D</span>
+        <span class="ph-title">chart_nlq_context.json — all 7 chart contexts</span>
+      </div>
+      <div class="prompt-body">@workspace
+
+Generate [docs/nlq/chart_nlq_context.json] and copy it to
+[angular-app/src/assets/nlq/chart_nlq_context.json].
+
+Use [backend/rejected_events.py] and [backend/data/rejected_events.csv] and
+[backend/data/servicer_metrics.csv] to populate the fields accurately.
+
+The JSON must follow this schema:
+{
+  "version": "1.0",
+  "global_context": {
+    "dashboard_title": "Operations Dashboard",
+    "portal": "Fannie Mae Loan Servicing Portal",
+    "active_dashboard_filters": ["servicer number", "servicer name"],
+    "system_prompt_prefix": "You are an assistant for the Fannie Mae Loan Servicing Operations Dashboard. Answer only based on data from the reporting API. If a question cannot be answered, say so clearly and explain why."
+  },
+  "chart_contexts": [
+    {
+      "chart_id": "...",
+      "chart_title": "...",
+      "chart_type": "...",
+      "system_prompt_context": "2-3 sentences: what this chart shows, data source, what is computable",
+      "answerable_questions": [ "3-5 questions this chart CAN answer" ],
+      "unanswerable_questions": [ "2 questions that look related but cannot be answered and why" ],
+      "active_filters": [ "nlq_alias values for filters the user can apply" ],
+      "suggested_followups": [ "4 smart follow-up prompts for this chart" ],
+      "api_endpoint": "the FastAPI endpoint feeding this chart",
+      "available_columns_not_shown": [ "any API response fields not rendered in the chart but available to add" ]
+    }
+  ]
+}
+
+Generate entries for ALL 7 chart_ids:
+delinquency_rate_trend, loan_count_region_servicer, portfolio_balance,
+servicer_status_dist, kpi_total_loans, kpi_avg_delinquency, kpi_portfolio_balance
+
+For suggested_followups, include at least one suggestion that:
+- Offers to show data in tabular format
+- Offers to add a column available in the API but not in the current chart
+- Offers to filter to a specific servicer from the confirmed list (SVC-001 to SVC-008)
+
+Validate JSON syntax. Ensure chart_id values match exactly the list above.
+</div>
+    </div>
+
+    <!-- PROMPT E -->
+    <h3 style="font-size:16px; margin:28px 0 6px; color:var(--fm-navy);">Prompt E — Add /api/nlq/context endpoint to FastAPI</h3>
+    <p style="font-size:13px; color:var(--fm-text-2); margin-bottom:4px;">Adds a metadata endpoint to your backend so the NLQ developer can fetch chart context dynamically instead of reading static files.</p>
+    <div class="prompt-block">
+      <div class="prompt-header">
+        <span class="ph-badge">PROMPT E</span>
+        <span class="ph-title">FastAPI — NLQ context endpoint</span>
+      </div>
+      <div class="prompt-body">@workspace
+
+Add a new file [backend/nlq_context.py] that registers two new FastAPI routes:
+
+Route 1: GET /api/nlq/context
+Returns the full contents of [docs/nlq/chart_nlq_context.json].
+Tags: ["NLQ"]. Add a docstring: "Returns chart-level NLQ context for the Angular chatbot panel."
+
+Route 2: GET /api/nlq/context/{chart_id}
+Returns the single chart_context entry matching chart_id from the JSON.
+Raises HTTPException 404 if chart_id not found.
+Tags: ["NLQ"].
+
+Route 3: GET /api/nlq/metadata
+Returns the full [docs/nlq/metadata.json].
+Tags: ["NLQ"]. Docstring: "Returns source-to-target metadata vocabulary."
+
+Import pattern — follow the same pattern used in [backend/rejected_events.py]:
+- Use APIRouter not app directly
+- Load JSON files at module level using pathlib.Path
+- Return dicts (FastAPI auto-serialises to JSON)
+
+Register the router in [backend/main.py] with:
+from nlq_context import router as nlq_context_router
+app.include_router(nlq_context_router)
+
+After adding: the NLQ developer can bootstrap via:
+  GET http://<your-IP>:8000/api/nlq/context
+  GET http://<your-IP>:8000/api/nlq/metadata
+  GET http://<your-IP>:8000/api/nlq/context/delinquency_rate_trend
+</div>
+    </div>
+
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- SECTION 9 — SMART SUGGESTIONS -->
+  <div class="section" id="suggestions">
+    <p class="section-label">Section 9</p>
+    <h2>Smart suggestion engine — rules for each chart</h2>
+    <p>The NLQ backend should apply these rules when generating suggestions after each response. These are seeded from the confirmed dashboard data and API capabilities.</p>
+
+    <table class="meta-table">
+      <thead>
+        <tr>
+          <th>Chart</th>
+          <th>Suggestion trigger</th>
+          <th>Suggestion text shown to user</th>
+          <th>What it does</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>All charts</td>
+          <td>After any answer with row data</td>
+          <td>"Show as table"</td>
+          <td>Calls same API endpoint, renders response as HTML table in chat</td>
+        </tr>
+        <tr>
+          <td>All charts</td>
+          <td>If <code>available_columns_not_shown[]</code> is non-empty</td>
+          <td>"Add [column name] column"</td>
+          <td>Re-calls endpoint, adds the field to table or chart tooltip</td>
+        </tr>
+        <tr>
+          <td>Delinquency Trend</td>
+          <td>After showing all-servicer data</td>
+          <td>"Filter to SVC-001 Apex only"</td>
+          <td>Calls <code>?servicer_id=SVC-001</code></td>
+        </tr>
+        <tr>
+          <td>Delinquency Trend</td>
+          <td>After servicer-level answer</td>
+          <td>"Compare all servicers side by side"</td>
+          <td>Calls without servicer_id filter, returns full groupby</td>
+        </tr>
+        <tr>
+          <td>Loan Count by Region</td>
+          <td>After regional data shown</td>
+          <td>"Which region has the most loans?"</td>
+          <td>Sorts by loan_count DESC, highlights top region</td>
+        </tr>
+        <tr>
+          <td>Portfolio Balance</td>
+          <td>After balance data shown</td>
+          <td>"Show as % of total portfolio"</td>
+          <td>Computes each servicer balance / $1,525M total</td>
+        </tr>
+        <tr>
+          <td>KPI cards</td>
+          <td>After KPI value shown</td>
+          <td>"Break this down by servicer"</td>
+          <td>Calls <code>/api/rejected-events/by-servicer</code> to disaggregate</td>
+        </tr>
+        <tr>
+          <td>All charts</td>
+          <td>Always in suggestions</td>
+          <td>"Export this data as CSV"</td>
+          <td>Returns blob download of current API response as CSV</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <strong>Unanswerable guard:</strong> Before calling the NLQ backend, the Angular component checks the user's input against <code>unanswerable_questions[]</code> in <code>chart_nlq_context.json</code> using simple substring matching. If matched, it renders a local "This data is not available because..." message without a network call. This prevents the NLQ backend from hallucinating answers to questions the API cannot support.
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div style="background:var(--fm-navy); color:#90AFDD; font-size:12px; padding:24px 0; text-align:center; margin: 0 -32px;">
+    Fannie Mae · Loan Servicing Platform · MSR17051-HT7 · NLQ Chatbot Integration Guide · DRAFT
+  </div>
+
+  <div class="spacer"></div>
+
+</div>
+</body>
+</html>

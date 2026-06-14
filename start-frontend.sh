@@ -19,19 +19,24 @@ if [ -n "$CODESPACE_NAME" ]; then
   # the Angular app can't hardcode "localhost:8000" — it needs the
   # Codespaces-forwarded URL for port 8000.
   #
-  # We patch the API base URL in reporting.service.ts before serving.
-  BACKEND_URL="https://${CODESPACE_NAME}-8000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+  # We patch environment.ts apiUrl before serving.
+  # Prefer local forwarded tunnel URL because it is usually the most reliable
+  # path from browser -> Codespaces ports, and avoids cross-origin/session issues.
+  BACKEND_URL="${BACKEND_URL_OVERRIDE:-http://localhost:8000}"
   echo ""
   echo "  Codespaces detected."
   echo "  Backend URL will be: $BACKEND_URL"
   echo ""
 
-  # Patch the API URL in the service file
-  sed -i "s|http://localhost:8000|${BACKEND_URL}|g" \
-    src/app/shared/reporting.service.ts
+  # Patch apiUrl in Angular environment config for Codespaces.
+  sed -i -E "s|apiUrl:[[:space:]]*'[^']*'|apiUrl: '${BACKEND_URL}'|g" \
+    src/environments/environment.ts
 
 else
   ENV="local"
+  # Ensure local runs always target local backend.
+  sed -i -E "s|apiUrl:[[:space:]]*'[^']*'|apiUrl: 'http://localhost:8000'|g" \
+    src/environments/environment.ts
   # Check if Nexus registry is reachable
   if curl -I -s --connect-timeout 3 "https://nexusrepository.fanniemae.com" >/dev/null; then
     NPM_REGISTRY="https://nexusrepository.fanniemae.com/repository/npm-public/"
@@ -73,4 +78,5 @@ echo ""
 npx ng serve \
   --host 0.0.0.0 \
   --port 4200 \
-  --disable-host-check
+  --disable-host-check \
+  --proxy-config proxy.conf.json

@@ -1,0 +1,10 @@
+# LOCAL: dbt-duckdb writes to backend/db/fnma.duckdb
+# PROD:  add fnma_prod block pointing at Athena — models unchanged
+
+fnma_local:
+  target: duckdb
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "../db/fnma.duckdb"
+      threads: 4

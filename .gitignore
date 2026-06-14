@@ -16,11 +16,11 @@ ENV/
 **/__pycache__/
 *.py[cod]
 
-# Angular build/cache artifacts
-angular-app/dist/
-angular-app/.angular/
+# DuckDB generated file (built at runtime by dbt)
+backend/db/fnma.duckdb
+backend/db/fnma.duckdb.wal
 
-# Local secret env files
-.env
-.env.*
-!.env.example
+# dbt generated artifacts (not source-controlled — regenerated on each run)
+backend/dbt_project/target/
+backend/dbt_project/logs/
+backend/dbt_project/.user.yml

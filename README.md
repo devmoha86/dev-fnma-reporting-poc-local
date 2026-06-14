@@ -100,6 +100,13 @@ cp .env.example .env
 docker compose up --build
 ```
 
+Codespaces only (set frontend -> backend URL before compose):
+
+```bash
+export API_URL="https://${CODESPACE_NAME}-8000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+docker compose up --build
+```
+
 4. Open:
 - Frontend: http://localhost:4200
 - Backend docs: http://localhost:8000/docs

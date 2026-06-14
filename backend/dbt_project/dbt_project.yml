@@ -1,0 +1,26 @@
+name: fnma_reporting
+version: "1.0.0"
+config-version: 2
+
+profile: fnma_local
+
+model-paths: ["models"]
+seed-paths:  ["seeds"]
+test-paths:  ["tests"]
+
+models:
+  fnma_reporting:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  fnma_reporting:
+    servicer_metrics:
+      +column_types:
+        unique_id:          integer
+        delinquency_rate:   double
+        total_balance_usd:  double
+        loan_count:         integer
+        business_date:      date

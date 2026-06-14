@@ -1,0 +1,70 @@
+{
+  "hash": "c45bb996",
+  "configHash": "0f91ebb1",
+  "lockfileHash": "4ab0cbf9",
+  "browserHash": "607ea23a",
+  "optimized": {
+    "@angular/common": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
+      "file": "@angular_common.js",
+      "fileHash": "348985c0",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "d53bb4f6",
+      "needsInterop": false
+    },
+    "@angular/core": {
+      "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
+      "file": "@angular_core.js",
+      "fileHash": "02310f1b",
+      "needsInterop": false
+    },
+    "@angular/forms": {
+      "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
+      "file": "@angular_forms.js",
+      "fileHash": "bf2f62a6",
+      "needsInterop": false
+    },
+    "@angular/platform-browser": {
+      "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
+      "file": "@angular_platform-browser.js",
+      "fileHash": "dd8b4361",
+      "needsInterop": false
+    },
+    "rxjs": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
+      "file": "rxjs.js",
+      "fileHash": "3b1e40ed",
+      "needsInterop": false
+    },
+    "rxjs/operators": {
+      "src": "../../../../../../node_modules/rxjs/dist/esm5/operators/index.js",
+      "file": "rxjs_operators.js",
+      "fileHash": "9543cebf",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-TGO3ILA4": {
+      "file": "chunk-TGO3ILA4.js"
+    },
+    "chunk-LVSVISAD": {
+      "file": "chunk-LVSVISAD.js"
+    },
+    "chunk-QYUJPPWU": {
+      "file": "chunk-QYUJPPWU.js"
+    },
+    "chunk-UT2445ZS": {
+      "file": "chunk-UT2445ZS.js"
+    },
+    "chunk-TZR7GLKZ": {
+      "file": "chunk-TZR7GLKZ.js"
+    },
+    "chunk-XHNSCBKZ": {
+      "file": "chunk-XHNSCBKZ.js"
+    }
+  }
+}

@@ -58,10 +58,12 @@ export class ReportingService {
 
   /**
    * API base URL — read from environment.ts.
-   * Local:       http://localhost:8000
+    * Local:       http://localhost:8000
    * Codespaces:  https://<codespace-name>-8000.<forwarding-domain>
    */
-  private readonly API = environment.apiUrl;
+  // Use same-origin /api via Angular dev-server proxy to avoid
+  // Codespaces 4200 -> 8000 cross-origin tunnel/auth issues.
+  private readonly API = globalThis?.location ? '' : environment.apiUrl;
 
   /**
    * Converts FilterParams → Angular HttpParams (URL query string).
